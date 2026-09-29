@@ -4,11 +4,15 @@ import NotFoundPage from "./pages/public/NotFoundPage";
 import LandingPage from "./pages/public/LandingPage";
 import Placeholder from './pages/Placeholder';
 
+import PublicLayout from './components/layout/PublicLayout';
+import RootLayout from './components/layout/RootLayout';
+
 export const router = createBrowserRouter([
   {
-    // RootLayout
+    element: <RootLayout />,
     children: [
       {
+        element: <PublicLayout />,
         children: [
           { index: true, element: <LandingPage />},
           { path: 'login', element: <Placeholder title="Logowanie" />},
