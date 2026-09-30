@@ -1,12 +1,13 @@
 import { useParams } from 'react-router';
+import PageHeader from '../components/layout/PageHeader';
 
 export default function Placeholder({ title }) {
   const params = useParams();
   const entries = Object.entries(params)
+
   return (
-    <main className="p-y">
-      <h1 className="text-2xl font-bold text-pine">{title}</h1>
-      <p className="mt-2 text-ink-muted">Ta strona jest jeszcze w budowie.</p>
+    <div className="p-y">
+      <PageHeader title={title} description="Ta strona jest jeszcze w budowie" />
 
       {entries.length > 0 && (
         <ul className="mt-4">
@@ -17,6 +18,6 @@ export default function Placeholder({ title }) {
           ))}
         </ul>
       )}
-    </main>
+    </div>
   )
 }

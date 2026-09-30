@@ -6,6 +6,8 @@ import Placeholder from './pages/Placeholder';
 
 import PublicLayout from './components/layout/PublicLayout';
 import RootLayout from './components/layout/RootLayout';
+import FinderLayout from './components/layout/FinderLayout';
+import VetLayout from './components/layout/VetLayout';
 
 export const router = createBrowserRouter([
   {
@@ -22,7 +24,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 't/:tagId',
-        // FinderLayout
+        element: <FinderLayout />,
         children: [
           { index: true , element: <Placeholder title="Strona tagu" />},
           { path: 'lokalizacja', element: <Placeholder title="Udostepnij lokalizacje" />},
@@ -31,6 +33,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'vet/:shareToken',
+        element: <VetLayout />,
         children: [{ index: true, element: <Placeholder title="Paszport medyczny" />}]
       },
       {
