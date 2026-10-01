@@ -1,7 +1,8 @@
-import { Link, NavLink } from "react-router"
+import { NavLink } from "react-router"
 import { Plus } from "lucide-react"
 import Logo from "./Logo"
 import { OWNER_NAV_ITEMS } from "./ownerNav"
+import Button from '../ui/Button'
 
 export default function Sidebar() {
   return (
@@ -26,13 +27,9 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      <Link 
-        to="/spacery/nowy"
-        className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-ember px-4 py-3 font-semibold text-ink shadow-card transition-colors hover:bg-ember/90"
-      >
-        <Plus size={20} aria-hidden="true" />
-        <span>Rozpocznij spacer</span>
-      </Link>
+      <Button to="/spacery/nowy" variant="accent" size="lg" icon={Plus} className="mt-auto">
+          Rozpocznij spacer
+      </Button>
     </aside>
   )
 }

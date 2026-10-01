@@ -1,9 +1,20 @@
-import { Siren } from 'lucide-react'
+import { Siren, Plus, LogOut, MapPin } from "lucide-react";
 
 import Badge from "../../components/ui/Badge";
 import Card from "../../components/ui/Card";
 import Spinner from "../../components/ui/Spinner";
 import PageHeader from "../../components/layout/PageHeader.jsx";
+import Button from "../../components/ui/Button";
+
+const BUTTON_VARIANTS = [
+  "primary",
+  "accent",
+  "secondary",
+  "ghost",
+  "danger",
+  "alert",
+];
+const BUTTON_SIZES = ["sm", "md", "lg", "xl"];
 
 const BADGE_TONES = ["neutral", "pine", "ember", "alert", "sky", "amber"];
 
@@ -14,6 +25,37 @@ export default function UiGalleryPage() {
         title="Galeria UI"
         description="Wszystkie wspólne komponenty i ich warianty."
       />
+
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-3">
+          {BUTTON_VARIANTS.map((variant) => (
+            <Button key={variant} variant={variant}>
+              {variant}
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {BUTTON_SIZES.map((size) => (
+            <Button key={size} size={size} icon={Plus}>
+              Rozmiar {size}
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button to="/" variant="secondary">
+            Link (prop „to”)
+          </Button>
+          <Button disabled>Wyłączony</Button>
+          <Button variant="danger" icon={LogOut}>
+            Wyloguj się
+          </Button>
+        </div>
+        <div className="max-w-md">
+          <Button variant="alert" size="xl" icon={MapPin} fullWidth>
+            Wyślij moją lokalizację
+          </Button>
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center gap-2">
         {BADGE_TONES.map((tone) => (

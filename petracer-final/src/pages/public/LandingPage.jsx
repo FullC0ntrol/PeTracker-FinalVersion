@@ -1,6 +1,5 @@
-import { Link } from 'react-router';
-
 import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
 
 export default function LandingPage () {
   return (
@@ -17,12 +16,9 @@ export default function LandingPage () {
             Znalazca przykłada telefon do tagu i od razu widzi, jak się z Tobą skontaktować - bez instalowania aplikacji.
             Ty masz w jednym miejscu spacery, szczepienia i leki.
           </p>
-          <Link
-            to="/login"
-            className='inline-flex min-h-12 items-center rounded-xl bg-ember px-6 font-semibold text-ink shadow-card transition-colors hover:bg-ember/90'
-          >
+          <Button to="/login" variant="accent" size="lg">
             Zaloguj się
-          </Link>
+          </Button>
         </div>
       </section>
     </div>
