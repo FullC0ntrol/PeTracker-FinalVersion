@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
+import UiGalleryPage from "./pages/dev/UiGalleryPage";
+
 import NotFoundPage from "./pages/public/NotFoundPage";
 import LandingPage from "./pages/public/LandingPage";
 import Placeholder from './pages/Placeholder';
@@ -20,6 +22,7 @@ export const router = createBrowserRouter([
           { index: true, element: <LandingPage />},
           { path: 'login', element: <Placeholder title="Logowanie" />},
           { path: 'auth/verify', element: <Placeholder title="Werfikacja logowania" />},
+          { path: 'dev/ui', element: <UiGalleryPage />},
           { path: '*', element: <NotFoundPage />}
         ]
       },

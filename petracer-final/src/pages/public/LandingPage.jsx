@@ -1,13 +1,15 @@
 import { Link } from 'react-router';
 
+import Badge from "../../components/ui/Badge";
+
 export default function LandingPage () {
   return (
     <div className="space-y-12">
       <section className="grid items-center gap-8 md:grid-cols-2">
         <div className="space-y-5">
-          <p className="inline-block rounded-full bg-pine-soft px-3 py-1 text-sm font-semibold text-pine">
+          <Badge tone="pine" size="md">
             Tag NFC / QR na obroży
-          </p>
+          </Badge>
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Zgubione zwierzę wraca do domu szybciej
           </h1>
