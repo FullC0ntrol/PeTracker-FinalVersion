@@ -8,6 +8,7 @@ import PublicLayout from './components/layout/PublicLayout';
 import RootLayout from './components/layout/RootLayout';
 import FinderLayout from './components/layout/FinderLayout';
 import VetLayout from './components/layout/VetLayout';
+import OwnerLayout from './components/layout/OwnerLayout';
 
 export const router = createBrowserRouter([
   {
@@ -40,7 +41,7 @@ export const router = createBrowserRouter([
         // RequireAuth
         children: [
           {
-            // OwnerLayout
+            element: <OwnerLayout />,
             children: [
               { path: 'panel', element: <Placeholder title="Panel" />},
               { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierze" />},
