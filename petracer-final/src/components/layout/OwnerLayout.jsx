@@ -1,8 +1,13 @@
-import { Outlet } from 'react-router'
+import { Outlet, Link, useLocation } from 'react-router'
+import { Plus } from 'lucide-react'
+import BottomNav from './BottomNav'
 import Sidebar from './Sidebar'
 import Logo from './Logo'
 
 export default function OwnerLayout() {
+  const { pathname } = useLocation()
+  const isTrackingWalk = pathname === '/spacery/nowy'
+
   return (
     <div className="min-h-dvh lg:flex">
       <Sidebar />
@@ -16,6 +21,19 @@ export default function OwnerLayout() {
           <Outlet />
         </main>
       </div>
+
+      {!isTrackingWalk && (
+        <Link 
+          to="/spacery/nowy"
+          aria-label="Rozpocznij spacer"
+          className='fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 grid size-14 place-items-center rounded-2xl bg-ember text-ink shadow-raised
+          transition-transform hover:scale-105 active:scale-95 lg:hidden'
+          >
+            <Plus size={26} aria-hidden="true" />
+          </Link>
+      )}
+
+      <BottomNav />
     </div>
   )
 }
