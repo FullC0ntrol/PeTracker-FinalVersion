@@ -5,6 +5,10 @@ import Card from "../../components/ui/Card";
 import Spinner from "../../components/ui/Spinner";
 import PageHeader from "../../components/layout/PageHeader.jsx";
 import Button from "../../components/ui/Button";
+import Select from "../../components/ui/Select.jsx";
+import Input from "../../components/ui/Input.jsx";
+import Textarea from "../../components/ui/Textarea.jsx";
+
 
 const BUTTON_VARIANTS = [
   "primary",
@@ -93,6 +97,31 @@ export default function UiGalleryPage() {
         <Spinner />
         <Spinner size="lg" />
         <Spinner showLabel label="Wczytuję spacery…" />
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Input
+          label="Imię zwierzęcia"
+          placeholder="np. Luna"
+          hint="Tak zobaczy je znalazca."
+        />
+        <Input
+          label="Adres e-mail"
+          type="email"
+          defaultValue="maciej@"
+          error="Wpisz poprawny adres e-mail."
+        />
+        <Select label="Gatunek" defaultValue="dog">
+          <option value="dog">Pies</option>
+          <option value="cat">Kot</option>
+          <option value="other">Inne</option>
+        </Select>
+        <Input label="Wyłączone" defaultValue="LUNA-7K2Q" disabled />
+        <Textarea
+          label="Komunikat dla znalazców"
+          placeholder="np. Jest płochliwa, nie goń jej."
+          className="sm:col-span-2"
+        />
       </div>
     </div>
   );
