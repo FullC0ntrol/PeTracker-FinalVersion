@@ -1,11 +1,12 @@
 import { PawPrint, Plus } from 'lucide-react'
-import { Link } from 'react-router'
 import { getPets } from '../../api/pets.js'
 import PageHeader from '../../components/layout/PageHeader.jsx'
 import Button from '../../components/ui/Button.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
 import { useAsync } from '../../hooks/useAsync.js'
+import PetCard from '../../components/pets/PetCard.jsx'
+
 
 export default function DashboardPage() {
   return (
@@ -64,9 +65,7 @@ function PetList() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {pets.map((pet) => (
-        <Link key={pet.id} to={`/zwierzeta/${pet.id}`} className="rounded-2xl bg-surface p-4 shadow-card">
-          <p className="font-semibold">{pet.name}</p>
-        </Link>
+        <PetCard key={pet.id} pet={pet} />
       ))}
     </div>
   )

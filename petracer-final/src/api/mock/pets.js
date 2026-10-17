@@ -1,7 +1,8 @@
 import { getDb } from '../../mocks/db'
-import { delay } from './client'
+import { delay, toPet } from './client'
 
 export async function getPets() {
   await delay()
-  return getDb().pets
+  const db = getDb()
+  return db.pets.map((pet) => toPet(db, pet))
 }

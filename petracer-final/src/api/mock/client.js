@@ -11,3 +11,21 @@ export function delay(minMs = 200, maxMs = 500) {
   const ms = minMs + Math.random() * (maxMs - minMs)
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+
+export function toPet(db, pet) {
+  const tag = db.tags.find((item) => item.petId === pet.id && item.isActive)
+   return {
+    id: pet.id,
+    name: pet.name,
+    species: pet.species,
+    breed: pet.breed,
+    birthDate: pet.birthDate,
+    weightKg: pet.weightKg,
+    medicalNotes: pet.medicalNotes,
+    isLost: pet.isLost,
+    lostMessage: pet.lostMessage,
+    tagCode: tag?.code ?? null,
+    createdAt: pet.createdAt,
+  }
+}
