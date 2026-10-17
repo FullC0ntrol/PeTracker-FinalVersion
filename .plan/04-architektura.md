@@ -1,6 +1,6 @@
 # Architektura
 
-> **Status:** projekt. Backend i wdrożenie jeszcze nie powstały. Diagramy Mermaid renderują się na GitHubie i można je wkleić do pracy.
+> **Status:** frontend w realizacji, backend i wdrożenie zaprojektowane.
 
 ## Przegląd
 
@@ -20,7 +20,7 @@ Wszystko działa pod jedną domeną: Caddy serwuje frontend i przekazuje adresy 
 
 ```
 PeTracker-FinalVersion/
-├── client/                 # obecny projekt Vite + React (dziś: petracer-final/)
+├── client/                 # aplikacja webowa Vite + React
 ├── server/                 # backend Express
 ├── docs/                   # ta dokumentacja
 ├── docker-compose.yml
@@ -32,13 +32,13 @@ PeTracker-FinalVersion/
 Warstwy, od góry:
 
 ```
-pages  →  components  →  hooks / context  →  api  →  (dziś) mocks  |  (później) fetch do /api
+pages  →  components  →  hooks / context  →  api  →  mocks (etap budowy) | fetch /api (docelowo)
 ```
 
 - **pages**: jedna strona na trasę, składa komponenty i pobiera dane przez hooki.
 - **components**: `layout/` (ramy stron), `ui/` (wspólne klocki), komponenty domenowe (`pets/`, `finder/`).
 - **hooks / context**: `useAuth` (zalogowany użytkownik), `useAsync` (ładowanie danych).
-- **api**: jedyne miejsce, które wie, skąd przychodzą dane. Podmiana mocków na backend zmienia tylko ten folder.
+- **api**: jedyne miejsce, które wie, skąd przychodzą dane. Na etapie budowy interfejsu korzysta z danych przykładowych w `localStorage` (`mocks/`), docelowo z zapytań `fetch` do API. Zmiana źródła danych dotyczy tylko tego folderu.
 
 ## Backend (`server/`)
 
@@ -250,4 +250,4 @@ flowchart TB
 - `db`: obraz `postgres`, dane na wolumenie, `sql/001_init.sql` uruchamiany przy pierwszym starcie.
 - `api`: obraz z `server/Dockerfile`, konfiguracja w zmiennych środowiskowych (`.env` poza repozytorium).
 - `caddy`: serwuje `client/dist` i automatycznie pobiera certyfikat Let’s Encrypt dla domeny.
-- Kolejność: najpierw sam frontend z mockami (grudzień), potem dochodzą `api` i `db`.
+- Kolejność: najpierw sam frontend na danych przykładowych, następnie usługi `api` i `db`.

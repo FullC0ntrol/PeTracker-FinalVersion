@@ -1,115 +1,125 @@
 # Dziennik decyzji
 
-Każda decyzja: co postanowiono, dlaczego, co odrzucono. Nowe wpisy dopisuj na końcu. Gdy decyzja się zmienia, nie kasuj starej, tylko dopisz nową z odwołaniem.
+Każdy wpis opisuje decyzję projektową, jej uzasadnienie i odrzucone alternatywy. Nowe wpisy dopisywane są na końcu. Zmiana decyzji to nowy wpis z odwołaniem do poprzedniego, bez usuwania starego.
 
-Ten plik jest materiałem do rozdziału pracy o uzasadnieniu przyjętych rozwiązań i do pytań na obronie.
+## Spis
+
+| Nr | Decyzja | Obszar |
+|---|---|---|
+| D1 | Aplikacja webowa PWA zamiast aplikacji natywnej | koncepcja |
+| D2 | NFC i kod QR na jednej zawieszce | koncepcja |
+| D3 | Krótkie adresy `/t/:tagId` | koncepcja |
+| D4 | Lokalizacja znalazcy przez SMS, bez zapisu w bazie | prywatność |
+| D5 | Znaczenie „danych zamaskowanych” | prywatność |
+| D6 | Wariant strony zawieszki wybiera serwer | bezpieczeństwo |
+| D7 | Logowanie magic link | bezpieczeństwo |
+| D8 | Sesja w ciasteczku `httpOnly`, jedna domena | bezpieczeństwo |
+| D9 | Zawieszka generowana w panelu właściciela | funkcje |
+| D10 | Tryb zaginięcia w profilu zwierzęcia | funkcje |
+| D11 | Spacery wpisywane ręcznie | funkcje |
+| D12 | React z Vite | technologie |
+| D13 | Tailwind CSS v4 z własnymi tokenami | technologie |
+| D14 | PostgreSQL | technologie |
+| D15 | SQL bez ORM | technologie |
+| D16 | Warstwa danych przykładowych przed backendem | architektura |
+| D17 | Wspólne komponenty interfejsu | architektura |
+| D18 | Monorepo `client/` i `server/` | architektura |
+| D19 | Caddy jako serwer wejściowy | wdrożenie |
+| D20 | Priorytetyzacja zakresu | zakres |
 
 ---
 
-### D1 · Nazwa: PeTrace
-**Data:** 2026-10-17
-**Decyzja:** aplikacja nazywa się PeTrace.
-**Odrzucone:** PET-FINDER (wczesne dokumenty), PetTrace (prototyp).
+### D1 · Aplikacja webowa PWA zamiast aplikacji natywnej
+**Decyzja:** system jest aplikacją webową w standardzie PWA.
+**Uzasadnienie:** znalazca musi zobaczyć dane zwierzęcia natychmiast po zeskanowaniu zawieszki. Konieczność instalacji aplikacji ze sklepu w tej sytuacji praktycznie eliminuje szansę na kontakt. PWA działa w każdej przeglądarce, a właściciel może ją zainstalować na ekranie głównym.
+**Odrzucone:** aplikacja natywna (Android/iOS), aplikacja hybrydowa (React Native, Flutter).
+**Konsekwencje:** ograniczony dostęp do funkcji urządzenia (geolokalizacja w tle, powiadomienia na iOS), opisany w kierunkach rozwoju.
 
-### D2 · Wygląd z prototypu
-**Data:** 2026-10-17
-**Decyzja:** obowiązuje paleta i typografia wdrożona w etapie 1 (tokeny w `src/index.css`). Dokument „Styles” z Dysku jest nieaktualny.
-**Powód:** wygląd jest już wdrożony i się podoba; zmiana kosztowałaby czas bez zysku dla pracy.
+### D2 · NFC i kod QR na jednej zawieszce
+**Decyzja:** każda zawieszka ma tag NFC i nadrukowany kod QR z tym samym adresem.
+**Uzasadnienie:** NFC jest najszybsze (przyłożenie telefonu), ale nie każdy telefon ma NFC, a część użytkowników nie wie, gdzie znajduje się antena. Kod QR odczyta aparat praktycznie każdego smartfona. Obie metody otwierają ten sam adres, więc system nie musi ich rozróżniać.
 
-### D3 · Krótkie adresy tagów `/t/:tagId`
-**Data:** 2026-10-17
-**Decyzja:** adres strony tagu ma postać `domena/t/<kod>`.
-**Powód:** popularne tagi NFC (NTAG213) mają ok. 140 bajtów pamięci na dane, więc krótszy adres zostawia zapas. Krótki adres jest też czytelniejszy pod kodem QR.
-**Odrzucone:** `/pet/:tagId`, `/tag/UUID` (UUID ma 36 znaków).
+### D3 · Krótkie adresy `/t/:tagId`
+**Decyzja:** adres zawieszki ma postać `domena/t/<kod>`, gdzie kod ma 8 znaków, np. `K7Q2-M9XD`.
+**Uzasadnienie:** popularne tagi NFC (NTAG213) mają ok. 140 bajtów pamięci na dane, więc krótki adres zostawia zapas. Krótki kod QR ma mniejszą gęstość i łatwiej go odczytać z małej, zabrudzonej zawieszki.
+**Odrzucone:** `/pet/:tagId`, `/tag/<UUID>` (UUID ma 36 znaków).
 
 ### D4 · Lokalizacja znalazcy przez SMS, bez zapisu w bazie
-**Data:** 2026-10-17
-**Decyzja:** znalazca udostępnia pozycję GPS, aplikacja buduje link `sms:` z numerem właściciela i linkiem do Google Maps, telefon otwiera natywną aplikację wiadomości.
-**Powód:** najprostsze w implementacji (brak endpointu, tabeli i widoku zgłoszeń), zgodne z kartą projektu, dane lokalizacyjne osób trzecich nie są przechowywane (mniej obowiązków wynikających z RODO).
-**Odrzucone:** zapis zgłoszeń w bazie z mapą w trybie zaginięcia (prototyp) → kierunek rozwoju.
-**Uwaga techniczna:** składnia treści w linku `sms:` różni się między Androidem a iOS, do przetestowania na obu.
+**Decyzja:** znalazca udostępnia pozycję GPS, aplikacja buduje link `sms:` z numerem opiekuna i treścią zawierającą link do mapy, a telefon otwiera systemową aplikację wiadomości.
+**Uzasadnienie:** dane lokalizacyjne osoby trzeciej nie są przetwarzane ani przechowywane przez system, co ogranicza obowiązki wynikające z RODO. Opiekun dostaje wiadomość w kanale, z którego korzysta na co dzień.
+**Odrzucone:** zapis zgłoszeń w bazie z mapą w panelu właściciela.
+**Uwagi:** składnia treści w linku `sms:` różni się między Androidem a iOS, co wymaga testów na obu systemach ([09-testy.md](09-testy.md)).
 
-### D5 · Tag generowany w panelu właściciela
-**Data:** 2026-10-17
-**Decyzja:** właściciel w profilu zwierzęcia klika „Utwórz tag”, system generuje unikalny kod, pokazuje adres i kod QR. Właściciel zapisuje adres na pustym tagu NFC aplikacją na telefon (np. NFC Tools) i drukuje QR.
-**Powód:** nie trzeba prowadzić puli wcześniej wygenerowanych tagów ani obsługiwać rejestracji ze strony tagu. Routing kontekstowy ma jeden przypadek mniej.
-**Odrzucone:** kreator po zeskanowaniu pustego tagu (`/setup/:tagId`), wcześniejsze generowanie kodów przez administratora.
+### D5 · Znaczenie „danych zamaskowanych”
+**Decyzja:** gdy zwierzę nie jest zaginione, znalazca widzi imię zwierzęcia, uwagi medyczne i przycisk „Zadzwoń”, ale nie widzi imienia, adresu e-mail ani numeru opiekuna wyświetlonego jako tekst. W trybie zaginięcia numer jest wyświetlany, a dochodzi możliwość wysłania SMS-a z lokalizacją.
+**Uzasadnienie:** znalazca musi mieć możliwość kontaktu także wtedy, gdy opiekun jeszcze nie zauważył zaginięcia.
+**Ograniczenie:** numer jest zawarty w linku `tel:`, więc technicznie można go odczytać. Pełne ukrycie wymagałoby pośredniczenia w kontakcie przez system (kierunek rozwoju).
 
-### D6 · Logowanie magic link
-**Data:** 2026-10-17
-**Decyzja:** logowanie bez hasła, jednorazowym linkiem wysłanym na e-mail (zgodnie z kartą).
-**Odrzucone:** login z imienia i hasło z daty urodzenia (wczesne założenia) — dane łatwe do zgadnięcia lub znalezienia w mediach społecznościowych.
+### D6 · Wariant strony zawieszki wybiera serwer
+**Decyzja:** `GET /api/tags/:code` zwraca nazwę wariantu (`inactive`, `owner`, `lost`, `found`) i wyłącznie dane potrzebne w tym wariancie.
+**Uzasadnienie:** dane, których osoba skanująca nie powinna widzieć, w ogóle nie trafiają do przeglądarki. Ukrywanie pól dopiero w interfejsie pozostawiałoby je dostępne w odpowiedzi serwera.
+**Odrzucone:** pobranie pełnego profilu i wybór widoku w aplikacji klienckiej.
 
-### D7 · PostgreSQL
-**Data:** 2026-10-17
-**Decyzja:** baza relacyjna PostgreSQL.
-**Powód:** dane są silnie powiązane (użytkownik → zwierzęta → tagi → skanowania), relacje i klucze obce pilnują spójności.
-**Odrzucone:** MongoDB (wymienione w karcie jako alternatywa).
+### D7 · Logowanie magic link
+**Decyzja:** logowanie bez hasła, jednorazowym linkiem wysyłanym na e-mail. Link jest ważny 15 minut i działa raz. W bazie przechowywany jest wyłącznie skrót (hash SHA-256) tokenu.
+**Uzasadnienie:** brak haseł eliminuje problem słabych i powtarzanych haseł oraz ich wycieków. Dla właściciela, który loguje się rzadko, link w mailu jest wygodniejszy niż pamiętanie hasła.
+**Odrzucone:** login i hasło; logowanie danymi zwierzęcia (np. imię i data urodzenia), które łatwo zgadnąć.
 
-### D8 · Warstwa mock przed backendem
-**Data:** 2026-10-17
-**Decyzja:** frontend korzysta z `src/api/`, które na razie czyta dane z `localStorage`. Komponenty nigdy nie importują z `src/mocks/`.
-**Powód:** frontend powstaje niezależnie od backendu; funkcje w `api/` są gotową specyfikacją przyszłych endpointów. Podmiana na `fetch` nie zmienia komponentów.
+### D8 · Sesja w ciasteczku `httpOnly`, jedna domena
+**Decyzja:** po weryfikacji linku serwer ustawia podpisany token JWT w ciasteczku `httpOnly`, `Secure`, `SameSite=Lax`. Aplikacja i API działają pod jedną domeną (`/api/*` przekazywane przez serwer wejściowy).
+**Uzasadnienie:** skrypty na stronie nie mają dostępu do tokenu (ochrona przed XSS). Jedna domena eliminuje konfigurację CORS.
+**Odrzucone:** przechowywanie tokenu w `localStorage`.
 
-### D9 · Wspólne komponenty UI zostają, ale bez rozbudowy
-**Data:** 2026-10-17
-**Decyzja:** istniejące komponenty z `components/ui/` zostają. Nowy wspólny komponent powstaje tylko wtedy, gdy ten sam element jest potrzebny w co najmniej dwóch miejscach.
-**Powód:** wspólny `Button` czy `Input` skraca pisanie kolejnych stron i daje spójny wygląd; dalsza rozbudowa biblioteki komponentów nie przybliża do działającej aplikacji.
+### D9 · Zawieszka generowana w panelu właściciela
+**Decyzja:** właściciel w profilu zwierzęcia wybiera „Utwórz tag”. System generuje unikalny kod i pokazuje adres oraz kod QR. Właściciel zapisuje adres na pustym tagu NFC dowolną aplikacją do programowania tagów i drukuje kod QR.
+**Uzasadnienie:** system nie musi prowadzić puli wcześniej wygenerowanych kodów ani obsługiwać rejestracji z poziomu strony zawieszki. Routing kontekstowy ma o jeden przypadek mniej.
+**Odrzucone:** kreator uruchamiany po zeskanowaniu pustej zawieszki, pule kodów generowane przez administratora.
 
-### D10 · Ograniczenie zakresu
-**Data:** 2026-10-17
-**Decyzja:** zakres według `01-zakres.md`.
-**Powód:** realnie dostępny czas do terminu to ok. 160–230 godzin, a pełny zakres karty to ok. 370–580 godzin.
-**Status:** **do akceptacji promotora.**
+### D10 · Tryb zaginięcia w profilu zwierzęcia
+**Decyzja:** przełącznik trybu zaginięcia znajduje się w profilu zwierzęcia, a zmiana wymaga potwierdzenia w oknie dialogowym.
+**Uzasadnienie:** jedna akcja nie wymaga osobnej podstrony. Potwierdzenie chroni przed przypadkowym upublicznieniem numeru telefonu.
 
 ### D11 · Spacery wpisywane ręcznie
-**Data:** 2026-10-17
-**Decyzja:** spacer zapisuje się ręcznie (czas trwania, opcjonalnie dystans) albo jednym kliknięciem po skanie tagu.
-**Powód:** przeglądarki, zwłaszcza na iOS, zatrzymują geolokalizację przy wygaszonym ekranie, więc śledzenie trasy w PWA jest zawodne i pracochłonne.
-**Odrzucone:** śledzenie GPS z mapą trasy i wykresy → kierunek rozwoju.
+**Decyzja:** spacer zapisywany jest ręcznie (czas trwania, opcjonalnie dystans) albo jednym przyciskiem po zeskanowaniu zawieszki.
+**Uzasadnienie:** przeglądarki, zwłaszcza na iOS, wstrzymują geolokalizację przy wygaszonym ekranie lub w tle. Śledzenie trasy w aplikacji webowej dawałoby niekompletne dane.
+**Odrzucone:** śledzenie trasy GPS z mapą i wykresami (kierunek rozwoju).
 
-### D12 · Tryb zaginięcia w profilu zwierzęcia
-**Data:** 2026-10-17
-**Decyzja:** przełącznik trybu zaginięcia jest w profilu zwierzęcia, z potwierdzeniem w oknie modalnym. Brak osobnej podstrony.
-**Powód:** bez mapy zgłoszeń osobna strona nie ma czego pokazywać.
+### D12 · React z Vite
+**Decyzja:** interfejs budowany w React, środowisko i budowanie aplikacji w Vite.
+**Uzasadnienie:** React to najpopularniejsza biblioteka do budowy interfejsów z dużym ekosystemem (routing, mapy, kody QR). Vite zapewnia szybki serwer deweloperski i ma gotowe wsparcie dla PWA przez wtyczkę.
 
-### D13 · Ankieta jako dodatek
-**Data:** 2026-10-17
-**Decyzja:** ankieta jest opcjonalna, prowadzona na grupach o zaginionych zwierzętach, jeśli praca pisemna będzie wymagała uzupełnienia.
+### D13 · Tailwind CSS v4 z własnymi tokenami
+**Decyzja:** style tworzone klasami Tailwind. Domyślna paleta kolorów jest wyłączona i zastąpiona własnymi tokenami w bloku `@theme`.
+**Uzasadnienie:** wszystkie kolory, fonty i cienie zdefiniowane są w jednym miejscu, a użycie koloru spoza palety jest niemożliwe, co pilnuje spójności wyglądu.
+**Odrzucone:** wcześniejsza koncepcja kolorystyczna oparta na domyślnej palecie Tailwind (emerald, cyan, rose).
 
-### D14 · Użycie AI
-**Data:** 2026-10-17
-**Stan:** prototyp wygenerował Claude Code; wersję finalną autor pisze samodzielnie na jego podstawie. **Do omówienia z promotorem**: zgoda, sposób opisania w pracy, ewentualne oświadczenie.
+### D14 · PostgreSQL
+**Decyzja:** relacyjna baza danych PostgreSQL.
+**Uzasadnienie:** dane są silnie powiązane (właściciel → zwierzęta → zawieszki → skanowania). Klucze obce i ograniczenia unikalności pilnują spójności po stronie bazy.
+**Odrzucone:** MongoDB (dokumentowa baza danych, rozważana w karcie projektu).
 
-### D15 · Co znaczy „dane zamaskowane”
-**Data:** 2026-10-17
-**Decyzja:** gdy zwierzę nie jest zaginione, znalazca widzi imię zwierzęcia i uwagi medyczne oraz przycisk „Zadzwoń”, ale nie widzi imienia, e-maila ani numeru telefonu właściciela jako tekstu. W trybie zaginięcia numer jest wyświetlany wprost i dochodzi SMS z lokalizacją.
-**Powód:** znalazca musi mieć możliwość kontaktu także wtedy, gdy właściciel jeszcze nie zauważył zaginięcia.
-**Ograniczenie (do opisania w pracy):** numer jest zawarty w linku `tel:`, więc technicznie da się go odczytać. Pełne ukrycie wymagałoby pośredniczenia w kontakcie przez system → kierunek rozwoju.
+### D15 · SQL bez ORM
+**Decyzja:** API korzysta z biblioteki `pg` i jawnie zapisanych zapytań SQL. Schemat bazy znajduje się w pliku `server/sql/001_init.sql`.
+**Uzasadnienie:** model danych obejmuje kilka tabel. Jawny SQL jest czytelny, łatwy do omówienia i nie wprowadza dodatkowej warstwy abstrakcji.
+**Odrzucone:** Prisma, Sequelize.
 
-### D16 · Wariant strony tagu wybiera serwer
-**Data:** 2026-10-17
-**Decyzja:** `GET /api/tags/:code` zwraca wariant (`inactive`, `owner`, `lost`, `found`) i tylko dane potrzebne w tym wariancie.
-**Powód:** dane, których znalazca nie powinien widzieć, w ogóle nie trafiają do przeglądarki.
-**Odrzucone:** pobieranie pełnego profilu i ukrywanie pól w React.
+### D16 · Warstwa danych przykładowych przed backendem
+**Decyzja:** aplikacja kliencka pobiera dane wyłącznie przez moduły w `client/src/api/`. Na etapie budowy interfejsu moduły te korzystają z danych przykładowych w `localStorage` (`client/src/mocks/`). Komponenty nigdy nie importują bezpośrednio z `mocks/`.
+**Uzasadnienie:** interfejs można zbudować i przetestować niezależnie od backendu. Funkcje w `api/` stanowią specyfikację przyszłych endpointów, a przejście na prawdziwe API nie zmienia komponentów.
 
-### D17 · Sesja w ciasteczku httpOnly, jedna domena
-**Data:** 2026-10-17
-**Decyzja:** po weryfikacji magic linku serwer ustawia podpisany JWT w ciasteczku `httpOnly`. Frontend i API działają pod tą samą domeną (`/api/*` przez proxy).
-**Powód:** JavaScript na stronie nie ma dostępu do tokenu (ochrona przed XSS), brak konfiguracji CORS.
-**Odrzucone:** token w `localStorage`.
+### D17 · Wspólne komponenty interfejsu
+**Decyzja:** powtarzalne elementy (przyciski, pola formularzy, karty, okna dialogowe) są osobnymi komponentami w `components/ui/`. Nowy wspólny komponent powstaje, gdy ten sam element jest potrzebny w co najmniej dwóch miejscach.
+**Uzasadnienie:** spójny wygląd i jedna implementacja dostępności (etykiety, fokus, obsługa klawiatury) dla całej aplikacji.
 
-### D18 · Caddy zamiast nginx
-**Data:** 2026-10-17
-**Decyzja:** serwerem przed aplikacją jest Caddy.
-**Powód:** sam pobiera i odnawia certyfikat HTTPS, konfiguracja to kilka linijek. Przy nginx trzeba osobno ustawić certbota.
+### D18 · Monorepo `client/` i `server/`
+**Decyzja:** jedno repozytorium zawiera aplikację kliencką, API, dokumentację i konfigurację wdrożenia.
+**Uzasadnienie:** cała praca w jednym miejscu, wspólna historia zmian, jedno polecenie `docker compose up` uruchamia system.
 
-### D19 · Monorepo: `client/` i `server/`
-**Data:** 2026-10-17
-**Decyzja:** jedno repozytorium z folderami `client/` (frontend), `server/` (backend), `docs/` i plikiem `docker-compose.yml` w korzeniu. Folder `petracer-final/` zmienia nazwę na `client/`.
-**Powód:** całość pracy w jednym miejscu, jeden `docker compose up` uruchamia cały system.
+### D19 · Caddy jako serwer wejściowy
+**Decyzja:** przed aplikacją działa serwer Caddy: serwuje pliki aplikacji klienckiej i przekazuje `/api/*` do API.
+**Uzasadnienie:** automatycznie uzyskuje i odnawia certyfikat HTTPS (Let’s Encrypt). HTTPS jest wymagany przez geolokalizację i service worker.
+**Odrzucone:** nginx z osobno konfigurowanym certbotem.
 
-### D20 · SQL bez ORM
-**Data:** 2026-10-17
-**Decyzja:** backend używa biblioteki `pg` i ręcznie pisanych zapytań SQL, schemat w pliku `sql/001_init.sql`.
-**Powód:** kilka tabel, prosty model danych; mniej rzeczy do nauki niż przy ORM, a zapytania łatwo pokazać i omówić w pracy.
+### D20 · Priorytetyzacja zakresu
+**Decyzja:** zakres podzielony na priorytety według [01-zakres.md](01-zakres.md).
+**Uzasadnienie:** ograniczony czas realizacji. Pierwszeństwo ma rdzeń pracy (identyfikacja bez instalacji, routing kontekstowy, prywatność), który musi być kompletny i wdrożony. Funkcje dodatkowe realizowane są po jego ukończeniu.

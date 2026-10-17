@@ -1,7 +1,7 @@
 # Przypadki użycia
 
 Zakres zgodny z `01-zakres.md`. Przypadki z priorytetem 2 są oznaczone **(P2)**.
-Ten plik jest podstawą rozdziału o wymaganiach funkcjonalnych i diagramu przypadków użycia w pracy.
+Przypadki użycia stanowią podstawę wymagań funkcjonalnych systemu.
 
 ## Aktorzy
 

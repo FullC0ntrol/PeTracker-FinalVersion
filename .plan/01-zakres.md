@@ -1,64 +1,60 @@
 # Zakres projektu
 
-> **Status:** wersja robocza. Zmiany względem karty projektu wymagają akceptacji promotora.
+Zakres podzielono na priorytety. Priorytet 1 to rdzeń pracy: identyfikacja zwierzęcia bez instalowania aplikacji i routing kontekstowy. Musi działać w pełni i być wdrożony. Funkcje z priorytetów 2 i 3 są realizowane, jeśli pozwoli na to czas. Pozostałe pomysły opisano w pracy jako kierunki rozwoju.
 
-Zasada: najkrótsza droga do działającej, wdrożonej aplikacji. Rdzeń pracy (identyfikacja bez instalacji aplikacji + routing kontekstowy) musi być dopracowany. Reszta jest uproszczona albo trafia do rozdziału „Kierunki rozwoju”.
+## Priorytet 1 — rdzeń systemu
 
-## Priorytet 1 — musi działać
-
-| Funkcja | Wersja w projekcie |
+| Funkcja | Opis |
 |---|---|
-| Strona tagu z routingiem kontekstowym | 4 widoki: nieznany tag, znalazca (dane zamaskowane), zaginione (pełny profil), właściciel (szybki zapis) |
-| Widok znalazcy | zdjęcie, imię, uwagi medyczne, przycisk „Zadzwoń” (`tel:`) |
-| Lokalizacja od znalazcy | GPS telefonu → link `sms:` z lokalizacją Google Maps; **nic nie trafia do bazy** |
-| Tryb zaginięcia | przełącznik w profilu zwierzęcia z potwierdzeniem w oknie modalnym |
-| Logowanie | magic link (prawdziwy e-mail z jednorazowym linkiem) |
-| Zwierzęta | lista, dodawanie (jeden formularz), profil, edycja |
-| Tag | wygenerowanie kodu w panelu, kod QR, adres do zapisania na tagu NFC |
-| Szybki zapis właściciela | po skanie własnego tagu: przyciski „Karmienie” i „Spacer” |
-| Audyt bezpieczeństwa | lista skanowań tagu (data, godzina, przeglądarka) |
-| PWA | manifest, ikony, instalowalność, podstawowy service worker |
-| Backend | Node.js + Express + PostgreSQL, tylko endpointy dla funkcji z tej tabeli |
-| Wdrożenie | Docker na własnym VPS, domena, HTTPS |
+| Strona tagu z routingiem kontekstowym | cztery widoki: nieaktywny tag, znalazca, zwierzę zaginione, właściciel |
+| Widok znalazcy | imię zwierzęcia, uwagi medyczne, przycisk połączenia z opiekunem (`tel:`) |
+| Lokalizacja od znalazcy | pozycja GPS telefonu przekazywana w SMS-ie (`sms:` z linkiem do mapy), bez zapisu w bazie |
+| Tryb zaginięcia | przełącznik w profilu zwierzęcia z potwierdzeniem i komunikatem dla znalazcy |
+| Logowanie | magic link: jednorazowy link wysyłany na e-mail |
+| Zwierzęta | lista, dodawanie, profil, edycja |
+| Zawieszka | wygenerowanie kodu, kod QR do wydruku, adres do zapisania na tagu NFC |
+| Szybki zapis aktywności | po zeskanowaniu własnej zawieszki: „Karmienie” i „Spacer” |
+| Audyt bezpieczeństwa | historia skanowań zawieszki: data, godzina, przeglądarka |
+| PWA | manifest, ikony, możliwość instalacji, podstawowy service worker |
+| API i baza danych | Node.js + Express + PostgreSQL dla funkcji z tej tabeli |
+| Wdrożenie | Docker na serwerze VPS, własna domena, HTTPS |
 
-## Priorytet 2 — jeśli zostanie czas
+## Priorytet 2
 
-| Funkcja | Wersja uproszczona |
+| Funkcja | Opis |
 |---|---|
 | Udostępnianie weterynarzowi | link z tokenem i datą ważności, podgląd danych medycznych tylko do odczytu |
-| Spacery | ręczny wpis (data, czas trwania, opcjonalnie dystans), lista i suma z 7 dni, bez wykresów |
-| Mapa przy wysyłaniu lokalizacji | mała mapa Leaflet z pozycją znalazcy przed wysłaniem SMS |
+| Spacery | ręczny wpis (data, czas trwania, opcjonalnie dystans), lista i podsumowanie z 7 dni |
+| Mapa przy wysyłaniu lokalizacji | podgląd pozycji znalazcy na mapie OpenStreetMap (Leaflet) |
+| Zdjęcie zwierzęcia | przesyłanie i wyświetlanie zdjęcia w profilu i widoku znalazcy |
 
-## Priorytet 3 — tylko przy dużym zapasie
+## Priorytet 3
 
-| Funkcja | Wersja uproszczona |
+| Funkcja | Opis |
 |---|---|
-| Harmonogram | lista przypomnień z datą, bez powiadomień |
+| Harmonogram | lista przypomnień (karmienie, leki, wizyty) bez powiadomień |
 
-## Kierunki rozwoju (opisane w pracy, nie implementowane)
+## Kierunki rozwoju
 
-- Powiadomienia push o przypomnieniach (Web Push, VAPID; na iOS działają tylko w zainstalowanej PWA)
-- Śledzenie spaceru przez GPS i wykresy aktywności (przeglądarki ograniczają geolokalizację przy wygaszonym ekranie)
-- Zapis zgłoszeń lokalizacji w bazie i mapa zgłoszeń w trybie zaginięcia
-- Korekta pinezki na mapie przez znalazcę (map picker)
-- Przybliżona lokalizacja skanu na podstawie adresu IP w audycie
-- Potwierdzenie wibracją (API wibracji nie działa w Safari na iOS)
-- Wybór zakresu danych udostępnianych weterynarzowi
-- Ustawienia powiadomień, wieloetapowy formularz zwierzęcia
-- Leniwe ładowanie tras, testy jednostkowe, panel deweloperski
+Funkcje przeanalizowane, ale świadomie pozostawione poza zakresem implementacji:
 
-## Dodatek
+- **Powiadomienia push** o przypomnieniach. Wymagają Web Push z kluczami VAPID; na iOS działają wyłącznie w zainstalowanej PWA.
+- **Śledzenie spaceru przez GPS** z mapą trasy i wykresami. Przeglądarki, szczególnie na iOS, wstrzymują geolokalizację przy wygaszonym ekranie, co ogranicza wiarygodność pomiaru w aplikacji webowej.
+- **Mapa zgłoszeń lokalizacji** przechowywanych w systemie. Wymaga podstawy prawnej i polityki retencji danych lokalizacyjnych osób trzecich.
+- **Korekta pozycji na mapie** przez znalazcę (map picker).
+- **Przybliżona lokalizacja skanu na podstawie adresu IP**. Wymaga zewnętrznej usługi geolokalizacji, a adres IP jest daną osobową.
+- **Potwierdzenie wibracją** (Vibration API, nieobsługiwane w Safari na iOS).
+- **Kontakt z opiekunem przez system** zamiast bezpośredniego numeru telefonu (pełne ukrycie danych kontaktowych).
+- **Wybór zakresu danych** udostępnianych weterynarzowi.
 
-- Ankieta na grupach o zaginionych zwierzętach, jeśli praca pisemna będzie wymagała uzupełnienia (szczegóły w `08-ankieta.md`).
+## Zmiany względem karty projektu
 
-## Zmiany względem karty projektu (do omówienia z promotorem)
-
-| W karcie | W projekcie |
-|---|---|
-| Push Reminders | kierunek rozwoju |
-| Analityka spacerów, wykresy 7-dniowe | ręczny wpis i suma z 7 dni (priorytet 2) |
-| Map Picker | kierunek rozwoju |
-| Web Haptics | kierunek rozwoju |
-| Audyt z lokalizacją z IP i mapą | lista skanowań bez lokalizacji |
-| Vet Quick Share | wersja uproszczona (priorytet 2) |
-| Rejestracja tagu ze strony głównej | generowanie tagu w panelu właściciela |
+| Karta projektu | Realizacja | Uzasadnienie |
+|---|---|---|
+| Push Reminders | kierunek rozwoju | ograniczona obsługa na iOS, złożoność konfiguracji |
+| Analityka spacerów z wykresami 7-dniowymi | ręczny wpis i podsumowanie (priorytet 2) | ograniczenia geolokalizacji w tle |
+| Map Picker | kierunek rozwoju | uproszczenie przepływu znalazcy |
+| Web Haptics | kierunek rozwoju | brak obsługi w Safari na iOS |
+| Audyt z lokalizacją z adresu IP i mapą | historia skanowań bez lokalizacji | minimalizacja przetwarzania danych osobowych |
+| Vet Quick Share | wersja uproszczona (priorytet 2) | rdzeń pracy ma pierwszeństwo |
+| Rejestracja zawieszki na stronie głównej | generowanie zawieszki w panelu właściciela | prostszy przepływ, mniej przypadków w routingu |

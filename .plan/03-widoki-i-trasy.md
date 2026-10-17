@@ -1,56 +1,77 @@
 # Widoki i trasy
 
-Stan zakresu: zgodny z `01-zakres.md`. Kolumna „Zmiana” pokazuje różnicę względem routera z etapu 3.
+Lista wszystkich podstron aplikacji. Priorytety według [01-zakres.md](01-zakres.md).
 
-## Publiczne (PublicLayout)
+Strony są pogrupowane według layoutu, czyli wspólnej ramy (nagłówek, nawigacja), w której się wyświetlają. Każda grupa odpowiada innej grupie użytkowników.
 
-| Adres | Strona | Priorytet | Zmiana |
-|---|---|---|---|
-| `/` | strona główna: czym jest PeTrace, 3 kroki działania, „Zaloguj się” | 1 | — |
-| `/login` | formularz e-mail | 1 | — |
-| `/login/sprawdz-poczte` | „Sprawdź skrzynkę” | 1 | — |
-| `/auth/verify` | weryfikacja tokenu z linku | 1 | — |
-| `*` | strona 404 | 1 | — |
-| `/dev/ui` | galeria komponentów (tylko w trybie dev) | — | — |
+```mermaid
+flowchart TB
+  R[RootLayout] --> P[PublicLayout: odwiedzający]
+  R --> F[FinderLayout: znalazca]
+  R --> V[VetLayout: weterynarz]
+  R --> A[RequireAuth: tylko zalogowani]
+  A --> O[OwnerLayout: właściciel]
+```
 
-## Znalazca (FinderLayout)
+## Strony publiczne
 
-| Adres | Strona | Priorytet | Zmiana |
-|---|---|---|---|
-| `/t/:tagId` | routing kontekstowy, 4 warianty (tabela niżej) | 1 | — |
-| `/t/:tagId/lokalizacja` | pobranie GPS i przycisk „Wyślij SMS z lokalizacją” | 1 | zamiast formularza do bazy |
-| `/t/:tagId/wyslano` | — | — | **usunięte** (SMS otwiera natywną aplikację) |
+| Adres | Strona | Priorytet |
+|---|---|---|
+| `/` | strona główna: czym jest PeTrace, jak działa w trzech krokach, logowanie | 1 |
+| `/login` | formularz adresu e-mail | 1 |
+| `/login/sprawdz-poczte` | informacja o wysłanym linku | 1 |
+| `/auth/verify` | weryfikacja tokenu z linku i zalogowanie | 1 |
+| `*` | strona 404 | 1 |
+
+## Znalazca
+
+Wąska kolumna, bez nawigacji i zbędnych elementów, duże przyciski.
+
+| Adres | Strona | Priorytet |
+|---|---|---|
+| `/t/:tagId` | strona zawieszki z routingiem kontekstowym | 1 |
+| `/t/:tagId/lokalizacja` | pobranie pozycji GPS i wysłanie SMS-a z lokalizacją | 1 |
 
 ### Routing kontekstowy `/t/:tagId`
 
+Warunki sprawdzane są po kolei, pierwszy spełniony decyduje o widoku.
+
 | Kolejność | Warunek | Widok |
 |---|---|---|
-| 1 | tag nie istnieje albo nie jest przypisany | „Ten tag nie jest aktywny” |
-| 2 | zalogowany użytkownik jest właścicielem zwierzęcia | szybki zapis: „Karmienie”, „Spacer” |
-| 3 | zwierzę ma włączony tryb zaginięcia | pełny profil interwencyjny (czerwony), telefon, SMS z lokalizacją |
-| 4 | w pozostałych przypadkach | profil podstawowy, dane właściciela zamaskowane, kontakt przez „Zadzwoń” |
+| 1 | kod nie istnieje albo zawieszka nie jest przypisana | „Ten tag nie jest aktywny” |
+| 2 | skanuje zalogowany właściciel zwierzęcia | szybki zapis: „Karmienie”, „Spacer” |
+| 3 | zwierzę ma włączony tryb zaginięcia | widok alarmowy: komunikat, telefon, SMS z lokalizacją |
+| 4 | pozostałe przypadki | profil podstawowy, dane właściciela niewidoczne, przycisk „Zadzwoń” |
 
-Każde wejście na `/t/:tagId` zapisuje skan w audycie (data, godzina, przeglądarka).
+Warunek 2 jest przed 3, aby właściciel, który odnalazł zwierzę, po zeskanowaniu zawieszki zobaczył swój widok, a nie alarm przeznaczony dla znalazców.
 
-## Weterynarz (VetLayout)
+Każde wejście na stronę zawieszki jest zapisywane w historii skanowań.
 
-| Adres | Strona | Priorytet | Zmiana |
-|---|---|---|---|
-| `/vet/:shareToken` | paszport medyczny tylko do odczytu, „link wygasł” po terminie | 2 | — |
+## Weterynarz
 
-## Właściciel (RequireAuth + OwnerLayout)
+| Adres | Strona | Priorytet |
+|---|---|---|
+| `/vet/:shareToken` | paszport medyczny tylko do odczytu, komunikat po wygaśnięciu linku | 2 |
 
-| Adres | Strona | Priorytet | Zmiana |
-|---|---|---|---|
-| `/panel` | lista zwierząt + ostatnie skanowania tagów | 1 | uproszczony |
-| `/zwierzeta/nowe` | jeden formularz (bez kroków) | 1 | uproszczony |
-| `/zwierzeta/:id` | profil: dane, zdrowie, aktywność, **przełącznik trybu zaginięcia** | 1 | przejmuje tryb zaginięcia |
-| `/zwierzeta/:id/edytuj` | edycja (ten sam formularz) | 1 | — |
-| `/zwierzeta/:id/tag` | wygenerowanie tagu, QR, adres do zapisania na NFC, lista skanowań | 1 | — |
-| `/zwierzeta/:id/zaginiecie` | — | — | **usunięte** (przełącznik w profilu) |
-| `/zwierzeta/:id/vet-share` | utworzenie i unieważnienie linku | 2 | uproszczony |
-| `/spacery` | lista spacerów + suma z 7 dni | 2 | bez wykresu |
-| `/spacery/nowy` | ręczny wpis spaceru | 2 | zamiast śledzenia GPS |
-| `/spacery/:id` | — | — | **usunięte** |
-| `/harmonogram` | lista przypomnień | 3 | bez powiadomień |
-| `/ustawienia` | dane kontaktowe dla znalazcy, wylogowanie | 1 | uproszczony |
+## Właściciel
+
+Wymaga zalogowania. Na telefonie dolna nawigacja i górny pasek, na komputerze boczny panel.
+
+| Adres | Strona | Priorytet |
+|---|---|---|
+| `/panel` | lista zwierząt i ostatnie skanowania | 1 |
+| `/zwierzeta/nowe` | formularz nowego zwierzęcia | 1 |
+| `/zwierzeta/:id` | profil: dane, zdrowie, aktywność, przełącznik trybu zaginięcia | 1 |
+| `/zwierzeta/:id/edytuj` | edycja profilu | 1 |
+| `/zwierzeta/:id/tag` | zawieszka: generowanie kodu, QR, adres NFC, historia skanowań | 1 |
+| `/zwierzeta/:id/vet-share` | tworzenie i unieważnianie linku dla weterynarza | 2 |
+| `/spacery` | lista spacerów i podsumowanie z 7 dni | 2 |
+| `/spacery/nowy` | ręczny wpis spaceru | 2 |
+| `/harmonogram` | lista przypomnień | 3 |
+| `/ustawienia` | imię, numer telefonu dla znalazców, wylogowanie | 1 |
+
+## Strony pomocnicze
+
+| Adres | Strona |
+|---|---|
+| `/dev/ui` | galeria komponentów interfejsu, dostępna tylko w trybie deweloperskim |
