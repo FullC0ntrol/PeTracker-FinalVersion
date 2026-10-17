@@ -5,6 +5,7 @@ import UiGalleryPage from "./pages/dev/UiGalleryPage";
 import NotFoundPage from "./pages/public/NotFoundPage";
 import LandingPage from "./pages/public/LandingPage";
 import Placeholder from './pages/Placeholder';
+import DashboardPage from './pages/owner/DashboardPage';
 
 import PublicLayout from './components/layout/PublicLayout';
 import RootLayout from './components/layout/RootLayout';
@@ -46,7 +47,7 @@ export const router = createBrowserRouter([
           {
             element: <OwnerLayout />,
             children: [
-              { path: 'panel', element: <Placeholder title="Panel" />},
+              { path: 'panel', element: <DashboardPage />},
               { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierze" />},
               { path: 'zwierzeta/:id', element: <Placeholder title="Profil zwierzęcia" />},
               { path: 'zwierzeta/:id/edytuj', element: <Placeholder title="Edycja zwierzęcia" />},

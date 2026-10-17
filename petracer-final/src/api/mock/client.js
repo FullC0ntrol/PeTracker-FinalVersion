@@ -1,0 +1,13 @@
+/*
+  Narzędzia wspólne dla implementacji mock.
+
+  Każda funkcja w api/mock/ działa jak „serwer”: czeka chwilę (udajemy sieć), czyta bazę z `mocks/`,
+  sprawdza uprawnienia i zwraca dane albo rzuca błąd — dokładnie tak jak trasy w server/src/routes/.
+  Zwraca też te same pola co prawdziwe API, więc strony działają z oboma trybami bez zmian.
+*/
+
+// Sztuczne opóźnienie 200–500 ms, żeby stany ładowania (spinner) było widać.
+export function delay(minMs = 200, maxMs = 500) {
+  const ms = minMs + Math.random() * (maxMs - minMs)
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

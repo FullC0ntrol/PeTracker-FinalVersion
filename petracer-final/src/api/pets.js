@@ -1,0 +1,1 @@
+export { getPets } from './mock/pets.js'
