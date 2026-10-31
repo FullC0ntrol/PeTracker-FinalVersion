@@ -205,7 +205,7 @@ export function createSeed() {
     ],
 
     // Tabele „techniczne” logowania — puste na starcie, wypełniają je funkcje z `api/auth.js`.
-    magicLinks: [],
+    loginTokens: [],
     sessions: [],
   }
 }

@@ -1,22 +1,17 @@
 import { getDb, saveDb } from '../../mocks/db.js'
 import { safeRedirect } from '../../lib/redirect.js'
 import { apiError } from '../errors.js'
-import { delay} from './client.js'
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-// const PHONE_PATTERN = /^\+?[0-9 ()-]{9,20}$/
-const LINK_TTL_MS = 15 * 60 * 1000
-
+import { delay } from './client.js'
 
 /*
-  Logowanie bez hasła („magic link”) — odpowiednik server/src/routes/auth.js:
+  Logowanie bez hasła („magic link”) — odpowiednik przyszłego server/src/routes/auth.js:
     1. requestMagicLink — „serwer” zapisuje jednorazowy token i „wysyła” e-mail z linkiem
        /auth/verify?token=…  (e-maila nie ma, link wraca jako `devLink`)
-    2. verifyToken — sprawdza token, zakłada sesję, przeglądarka zapamiętuje token sesji
-    3. getCurrentUser — przy każdym starcie aplikacji: „kim jestem?”
-    4. logout — usuwa sesję
+    2. verifyToken — sprawdza token i zakłada sesję (sesja 17)
 */
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const LINK_TTL_MS = 15 * 60 * 1000
 
 export async function requestMagicLink(email, { name = '', next = null } = {}) {
   await delay()
@@ -24,15 +19,16 @@ export async function requestMagicLink(email, { name = '', next = null } = {}) {
   if (!EMAIL_PATTERN.test(normalizedEmail)) throw apiError(400, 'Wpisz poprawny adres e-mail.')
 
   const db = getDb()
-  // Magic link służy też do rejestracji: nieznany e-mail zakłada konto.
-  let user = db.users.find((item) => item.email === normalizedEmail)
-  if (!user) {
-    user = { id: crypto.randomUUID(), email: normalizedEmail, name: name.trim() || normalizedEmail.split('@')[0], phone: '' }
-    db.users.push(user)
-  }
-
+  // Konta jeszcze nie zakładamy: token pamięta e-mail i imię, a konto powstanie
+  // w verifyToken — dopiero gdy ktoś kliknie link ze swojej skrzynki.
   const token = crypto.randomUUID()
-  db.loginTokens.push({ token, userId: user.id, expiresAt: new Date(Date.now() + LINK_TTL_MS).toISOString(), usedAt: null })
+  db.loginTokens.push({
+    token,
+    email: normalizedEmail,
+    name: name.trim(),
+    expiresAt: new Date(Date.now() + LINK_TTL_MS).toISOString(),
+    usedAt: null,
+  })
   saveDb(db)
 
   const params = new URLSearchParams({ token })

@@ -10,8 +10,7 @@ import { createSeed } from './seed.js'
   Numer wersji w kluczu: gdy zmieni się kształt danych w seed.js, podbij go — stary zapis
   zostanie zignorowany i baza wypełni się od nowa.
 */
-const STORAGE_KEY = 'pettrace:db:v1'
-
+const STORAGE_KEY = 'pettrace:db:v2'
 // Kopia w pamięci, żeby nie parsować JSON-a przy każdym zapytaniu.
 let cache = null
 
