@@ -2,7 +2,7 @@
 
 @theme {
   --color-*: initial;
-  --color-paper: faf7f2;
+  --color-paper: #faf7f2;
   --color-surface: #ffffff;
   --color-ink: #1b2420;
   --color-ink-muted: #5e6a64;

@@ -2,14 +2,14 @@ import { Link } from "react-router";
 import { cn } from "../../lib/cn";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold tranistion-colors " +
-  "disable:cursos-not-allowed disabled-opacity-50";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-colors " +
+  "disabled:cursor-not-allowed disabled:opacity-50";
 
 const VARIANTS = {
   primary: "bg-pine text-surface hover:bg-pine/90",
   accent: "bg-ember text-ink shadow-card hover:bg-ember/90",
   secondary: "border border-line bg-surface text-ink hover:bg-paper",
-  ghost: "text-pine hover:pine-soft",
+  ghost: "text-pine hover:bg-pine-soft",
   danger: "border border-line bg-surface text-alert hover:bg-alert-soft",
   alert: "bg-alert text-surface hover:bg-alert/90",
 };
@@ -21,7 +21,7 @@ const SIZES = {
   xl: "min-h-14 px-6 text-lg font-bold",
 };
 
-const ICON_SIZES = { sm: 16, md: 18, lg: 18, xl: 2 };
+const ICON_SIZES = { sm: 16, md: 18, lg: 18, xl: 20 };
 
 export default function Button({
   to,
@@ -43,7 +43,7 @@ export default function Button({
   );
   const content = (
     <>
-      {Icon && <Icon size={ICON_SIZES[size]} />}
+      {Icon && <Icon size={ICON_SIZES[size]} aria-hidden="true" />}
       {children}
     </>
   );

@@ -22,7 +22,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <LandingPage />},
           { path: 'login', element: <Placeholder title="Logowanie" />},
-          { path: 'auth/verify', element: <Placeholder title="Werfikacja logowania" />},
+          { path: 'auth/verify', element: <Placeholder title="Weryfikacja logowania" />},
           { path: 'dev/ui', element: <UiGalleryPage />},
           { path: '*', element: <NotFoundPage />}
         ]
@@ -32,8 +32,8 @@ export const router = createBrowserRouter([
         element: <FinderLayout />,
         children: [
           { index: true , element: <Placeholder title="Strona tagu" />},
-          { path: 'lokalizacja', element: <Placeholder title="Udostepnij lokalizacje" />},
-          { path: 'wyslano', element: <Placeholder title="Lokalizacja wyslana" />}
+          { path: 'lokalizacja', element: <Placeholder title="Udostępnij lokalizację" />},
+          { path: 'wyslano', element: <Placeholder title="Lokalizacja wysłana" />}
         ]
       },
       {
@@ -48,15 +48,15 @@ export const router = createBrowserRouter([
             element: <OwnerLayout />,
             children: [
               { path: 'panel', element: <DashboardPage />},
-              { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierze" />},
+              { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierzę" />},
               { path: 'zwierzeta/:id', element: <Placeholder title="Profil zwierzęcia" />},
               { path: 'zwierzeta/:id/edytuj', element: <Placeholder title="Edycja zwierzęcia" />},
               { path: 'zwierzeta/:id/zaginiecie', element: <Placeholder title="Tryb zaginięcia" />},
-              { path: 'zwierzeta/:id/vet-share', element: <Placeholder title="Udostepnienie weterynarzowi" />},
+              { path: 'zwierzeta/:id/vet-share', element: <Placeholder title="Udostępnienie weterynarzowi" />},
               { path: 'zwierzeta/:id/tag', element: <Placeholder title="Tag zwierzęcia" />},
               { path: 'spacery', element: <Placeholder title="Spacery" />},
               { path: 'spacery/nowy', element: <Placeholder title="Nowy spacer" />},
-              { path: 'spacery/:id' , element: <Placeholder title="Szegóły spaceru" />},
+              { path: 'spacery/:id' , element: <Placeholder title="Szczegóły spaceru" />},
               { path: 'harmonogram', element: <Placeholder title="Harmonogram" />},
               { path: 'ustawienia', element: <Placeholder title="Ustawienia" />}
             ]

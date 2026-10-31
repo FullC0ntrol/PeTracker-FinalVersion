@@ -22,6 +22,9 @@ export function useAsync(asyncFn, deps) {
     return () => {
       ignore = true;
     };
+    // Zależności przekazuje wywołujący w `deps` (zakodowane w `key`), a `asyncFn` bywa
+    // tworzona na nowo przy każdym renderze — dodanie jej tutaj powodowałoby pętlę zapytań.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
   const isCurrent = result.key === key;
   return {

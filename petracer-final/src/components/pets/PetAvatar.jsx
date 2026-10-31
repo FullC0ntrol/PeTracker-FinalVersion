@@ -25,7 +25,7 @@ export default function PetAvatar({ name, species, size = "md", isLost = false, 
         className
       )}
     >
-      {name.trim().charAt(0).toUpperCase()}
+      {name?.trim().charAt(0).toUpperCase() || '?'}
     </span>
   )
 }
