@@ -7,6 +7,17 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // const PHONE_PATTERN = /^\+?[0-9 ()-]{9,20}$/
 const LINK_TTL_MS = 15 * 60 * 1000
 
+
+/*
+  Logowanie bez hasła („magic link”) — odpowiednik server/src/routes/auth.js:
+    1. requestMagicLink — „serwer” zapisuje jednorazowy token i „wysyła” e-mail z linkiem
+       /auth/verify?token=…  (e-maila nie ma, link wraca jako `devLink`)
+    2. verifyToken — sprawdza token, zakłada sesję, przeglądarka zapamiętuje token sesji
+    3. getCurrentUser — przy każdym starcie aplikacji: „kim jestem?”
+    4. logout — usuwa sesję
+*/
+
+
 export async function requestMagicLink(email, { name = '', next = null } = {}) {
   await delay()
   const normalizedEmail = email.trim().toLowerCase()

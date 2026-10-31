@@ -1,39 +1,26 @@
-import { Outlet, Link, useLocation } from 'react-router'
-import { Plus } from 'lucide-react'
-import BottomNav from './BottomNav'
-import Sidebar from './Sidebar'
-import Logo from './Logo'
+import { Outlet } from 'react-router'
+import Logo from './Logo.jsx'
 
+/*
+  Układ panelu właściciela pod telefon: bez sidebara, dolnego paska i menu.
+  U góry przyklejony nagłówek (logo, a od sesji 17 także kółko konta), pod nim jedna wąska
+  kolumna — na komputerze ta sama, tylko wyśrodkowana. Cała nawigacja jest na ekranie
+  zwierzęcia: przełącznik awatarów u góry i arkusz „Akcje” na dole (sesja 15b).
+*/
 export default function OwnerLayout() {
-  const { pathname } = useLocation()
-  const isTrackingWalk = pathname === '/spacery/nowy'
-
   return (
-    <div className="min-h-dvh lg:flex">
-      <Sidebar />
+    <div className="min-h-dvh">
+      <header className="sticky top-0 z-20 bg-paper/85 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="flex h-14 items-center justify-between">
+            <Logo to="/panel" />
+          </div>
+        </div>
+      </header>
 
-      <div className="flex-1">
-        <header className="sticky top-0 z-20 border-b border-line bg-paper/90 px-4 py-3 backdrop-blur lg:hidden">
-          <Logo to="/panel" />
-        </header>
-
-        <main className="mx-auto w-full max-w-5xl px-4 pt-6 pb-32 sm:px-6 lg:px-10 lg:py-10">
-          <Outlet />
-        </main>
-      </div>
-
-      {!isTrackingWalk && (
-        <Link 
-          to="/spacery/nowy"
-          aria-label="Rozpocznij spacer"
-          className='fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 grid size-14 place-items-center rounded-2xl bg-ember text-ink shadow-raised
-          transition-transform hover:scale-105 active:scale-95 lg:hidden'
-          >
-            <Plus size={26} aria-hidden="true" />
-          </Link>
-      )}
-
-      <BottomNav />
+      <main className="mx-auto w-full max-w-2xl px-4 pt-2 pb-32">
+        <Outlet />
+      </main>
     </div>
   )
 }

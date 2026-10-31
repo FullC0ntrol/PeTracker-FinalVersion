@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
 import UiGalleryPage from "./pages/dev/UiGalleryPage";
+import PetProfilePage from './pages/owner/PetProfilePage'
 
 import NotFoundPage from "./pages/public/NotFoundPage";
 import LandingPage from "./pages/public/LandingPage";
@@ -49,7 +50,7 @@ export const router = createBrowserRouter([
             children: [
               { path: 'panel', element: <DashboardPage />},
               { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierzę" />},
-              { path: 'zwierzeta/:id', element: <Placeholder title="Profil zwierzęcia" />},
+              { path: 'zwierzeta/:id', element: <PetProfilePage />},
               { path: 'zwierzeta/:id/edytuj', element: <Placeholder title="Edycja zwierzęcia" />},
               { path: 'zwierzeta/:id/zaginiecie', element: <Placeholder title="Tryb zaginięcia" />},
               { path: 'zwierzeta/:id/vet-share', element: <Placeholder title="Udostępnienie weterynarzowi" />},

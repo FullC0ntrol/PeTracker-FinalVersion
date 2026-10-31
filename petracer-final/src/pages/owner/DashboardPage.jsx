@@ -1,72 +1,44 @@
+import { Navigate } from 'react-router'
 import { PawPrint, Plus } from 'lucide-react'
 import { getPets } from '../../api/pets.js'
-import PageHeader from '../../components/layout/PageHeader.jsx'
 import Button from '../../components/ui/Button.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
+import ErrorState from '../../components/ui/ErrorState.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
 import { useAsync } from '../../hooks/useAsync.js'
-import PetCard from '../../components/pets/PetCard.jsx'
+import { getLastPetId } from '../../lib/lastPet.js'
 
-
+/*
+  /panel nie ma już własnej listy kart. Jeśli są zwierzęta, od razu otwieramy ekran
+  ostatnio oglądanego (albo pierwszego) — tam jest przełącznik u góry i arkusz „Akcje”.
+  Własny widok /panel zostaje tylko dla konta bez zwierząt: powitanie i przycisk „Dodaj”.
+*/
 export default function DashboardPage() {
-  return (
-    <>
-      <PageHeader
-        title="Cześć"
-        description="Twoje zwierzęta i ostatnie skanowania zawieszek."
-        action={
-          <Button to="/zwierzeta/nowe" icon={Plus}>
-            Dodaj zwierzę
-          </Button>
-        }
-      />
-
-      <section aria-labelledby="pets-heading">
-        <h2 id="pets-heading" className="mb-3 text-lg font-semibold">
-          Twoje zwierzęta
-        </h2>
-        <PetList />
-      </section>
-    </>
-  )
-}
-
-function PetList() {
   const { data: pets, error, isLoading, reload } = useAsync(getPets, [])
 
   if (isLoading) return <Spinner showLabel label="Wczytuję zwierzęta…" />
+  if (error) return <ErrorState title="Nie udało się wczytać zwierząt" error={error} onRetry={reload} />
 
-  if (error) {
-    return (
-      <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-alert-soft p-4">
-        <p className="font-medium text-alert">Nie udało się wczytać zwierząt. {error.message}</p>
-        <Button variant="secondary" size="sm" onClick={reload}>
-          Spróbuj ponownie
-        </Button>
-      </div>
-    )
+  if (pets.length > 0) {
+    const lastId = getLastPetId()
+    const target = pets.find((pet) => pet.id === lastId) ?? pets[0]
+    // `replace`: „Wstecz” z ekranu zwierzęcia nie wraca na /panel, który od razu by przekierował.
+    return <Navigate to={`/zwierzeta/${target.id}`} replace />
   }
 
-  if (pets.length === 0) {
-    return (
+  return (
+    <div className="space-y-6 pt-4">
+      <h1 className="text-2xl font-bold tracking-tight">Twoje zwierzęta</h1>
       <EmptyState
         icon={PawPrint}
         title="Nie masz jeszcze zwierząt"
-        description="Dodaj pierwsze zwierzę, żeby zobaczyć je tutaj."
+        description="Dodaj pierwsze zwierzę i utwórz mu zawieszkę — znalazca zobaczy, jak się z Tobą skontaktować."
         action={
           <Button to="/zwierzeta/nowe" icon={Plus} size="sm">
             Dodaj zwierzę
           </Button>
         }
       />
-    )
-  }
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {pets.map((pet) => (
-        <PetCard key={pet.id} pet={pet} />
-      ))}
     </div>
   )
 }
