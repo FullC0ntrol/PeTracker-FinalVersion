@@ -4,7 +4,7 @@
 
 Praca inżynierska · Maciej Strączek · Wyższa Szkoła Turystyki i Ekologii w Suchej Beskidzkiej · 2026/2027
 
-> **Stan:** aplikacja kliencka w budowie na danych przykładowych (etap 1 z 8). Backend zaprojektowany, jeszcze niezaimplementowany.
+> **Stan:** interfejs panelu częściowo gotowy, teraz powstają serwer, baza danych i logowanie PIN-em.
 > Szczegóły w sekcji [Stan prac](#stan-prac).
 
 ---
@@ -31,7 +31,7 @@ Zagubione zwierzę najczęściej znajduje przypadkowa osoba. Adresówka bywa nie
 
 ## Jak to działa
 
-Na zawieszce jest tag NFC i kod QR z unikalnym adresem, np. `petrace.pl/t/K7Q2-M9XD`. Zeskanowanie dowolnym smartfonem otwiera stronę w przeglądarce, **bez instalowania aplikacji**.
+Na zawieszce jest tag NFC i kod QR z unikalnym adresem, np. `petracker.pl/t/K7Q2-M9XD`. Zeskanowanie dowolnym smartfonem otwiera stronę w przeglądarce, **bez instalowania aplikacji**.
 
 Ten sam adres prowadzi do różnych widoków zależnie od tego, kto skanuje i w jakiej sytuacji jest zwierzę. To jest **routing kontekstowy**, a decyzję podejmuje serwer:
 
@@ -59,21 +59,18 @@ Pełny opis w [`plan/01-zakres.md`](plan/01-zakres.md).
 | **1 — rdzeń** | Strona zawieszki z czterema wariantami | ⏳ |
 | | Wysłanie lokalizacji znalazcy SMS-em (`sms:` z linkiem do mapy) | ⏳ |
 | | Tryb zaginięcia z komunikatem dla znalazcy | ⏳ |
-| | Logowanie bez hasła (magic link) | 🔄 |
+| | Konto i logowanie e-mailem i PIN-em | 🔄 |
 | | Zwierzęta: lista, dodawanie, profil, edycja | 🔄 |
 | | Zawieszka: kod, QR do wydruku, adres do zapisu na NFC | ⏳ |
-| | Szybki zapis aktywności po skanie | ⏳ |
+| | Szybki zapis aktywności po skanie i lista z 7 dni | ⏳ |
 | | Historia skanowań | ⏳ |
 | | PWA: manifest, instalacja, service worker | ⏳ |
 | | API + PostgreSQL, wdrożenie Docker na VPS z HTTPS | ⏳ |
-| **2** | Link dla weterynarza z datą ważności | ⏳ |
-| | Spacery wpisywane ręcznie i podsumowanie z 7 dni | ⏳ |
-| | Mapa przy wysyłaniu lokalizacji, zdjęcie zwierzęcia | ⏳ |
-| **3** | Harmonogram przypomnień (bez powiadomień) | ⏳ |
+| **2** | Mapa przy wysyłaniu lokalizacji, zdjęcie zwierzęcia, wymiana kodu zawieszki | ⏳ |
 
 ✅ gotowe · 🔄 w trakcie · ⏳ zaplanowane
 
-Poza zakresem, opisane w pracy jako kierunki rozwoju: powiadomienia push, śledzenie spaceru przez GPS, mapa zgłoszeń przechowywanych w systemie, lokalizacja skanu z adresu IP.
+Poza zakresem, opisane w pracy jako kierunki rozwoju: spacery z formularzem i statystykami, harmonogram, link dla weterynarza, wysyłka wiadomości e-mail, powiadomienia push, śledzenie spaceru przez GPS, mapa zgłoszeń przechowywanych w systemie, lokalizacja skanu z adresu IP.
 
 ## Architektura
 
@@ -84,7 +81,6 @@ flowchart LR
   C -->|pliki statyczne| F[Frontend]
   C -->|/api/*| A[API<br/>Node.js + Express]
   A --> D[(PostgreSQL)]
-  A -->|SMTP| M[Poczta: link logowania]
 ```
 
 Całość działa pod jedną domeną, więc nie ma problemów z CORS, a sesja w ciasteczku `httpOnly` działa bez dodatkowej konfiguracji.
@@ -92,13 +88,13 @@ Całość działa pod jedną domeną, więc nie ma problemów z CORS, a sesja w 
 ### Warstwy aplikacji klienckiej
 
 ```
-pages  →  components  →  hooks / context  →  api  →  mock (dziś) | fetch /api (docelowo)
+pages  →  components  →  hooks / context  →  api  →  fetch /api
 ```
 
 - **`pages/`**: jedna strona na trasę. Składa komponenty i pobiera dane przez hooki.
 - **`components/`**: `layout/` (ramy stron), `ui/` (wspólne klocki), komponenty domenowe (`pets/`, później `finder/`).
 - **`hooks/`, `context/`**: `useAsync` (ładowanie, błąd, dane), później `useAuth`.
-- **`api/`**: **jedyne miejsce, które wie, skąd przychodzą dane.** Dziś re-eksportuje `api/mock/`, czyli „udawany serwer” na `localStorage` z opóźnieniem 200–500 ms. Po zbudowaniu backendu zmienią się tylko pliki w tym folderze, a strony zostaną bez zmian.
+- **`api/`**: **jedyne miejsce, które wie, skąd przychodzą dane.** Warstwa `api/mock/` z pierwszych sesji znika w sesji 25, gdy panel przejdzie na prawdziwe API.
 
 Schemat bazy, lista endpointów i przepływy logowania: [`plan/04-architektura.md`](plan/04-architektura.md).
 
@@ -143,7 +139,7 @@ Przydatne adresy w trybie deweloperskim:
 ```
 PeTracker-FinalVersion/
 ├── plan/                        # dokumentacja: zakres, przypadki użycia, trasy, architektura, decyzje, harmonogram, testy
-└── petracer-final/              # aplikacja kliencka (w etapie 4 zmieni nazwę na client/)
+└── petracer-final/              # aplikacja kliencka (w sesji 17 zmieni nazwę na client/)
     ├── public/                  # pliki statyczne (ikony PWA)
     ├── index.html
     ├── vite.config.js
@@ -170,26 +166,20 @@ Docelowo dojdą `src/context/` (logowanie), `src/components/finder/` (widoki zna
 | Adres | Strona | Layout | Logowanie | Stan |
 |---|---|---|---|---|
 | `/` | strona główna | Public | — | ✅ |
-| `/login` | formularz e-mail | Public | — | 🔄 |
-| `/auth/verify` | weryfikacja linku z e-maila | Public | — | ⏳ |
+| `/login` | formularz e-mail i PIN | Public | — | 🔄 |
+| `/rejestracja` | nowe konto: e-mail, imię, PIN | Public | — | ⏳ |
 | `/t/:tagId` | strona zawieszki (routing kontekstowy) | Finder | — | ⏳ |
 | `/t/:tagId/lokalizacja` | wysłanie lokalizacji SMS-em | Finder | — | ⏳ |
-| `/t/:tagId/wyslano` | potwierdzenie | Finder | — | ⏳ |
-| `/vet/:shareToken` | paszport medyczny (P2) | Vet | — | ⏳ |
-| `/panel` | lista zwierząt i ostatnie skanowania | Owner | tak | 🔄 |
+| `/panel` | otwiera ostatnio oglądane zwierzę albo pusty stan | Owner | tak | 🔄 |
 | `/zwierzeta/nowe` | nowe zwierzę | Owner | tak | ⏳ |
-| `/zwierzeta/:id` | profil: dane, zdrowie, aktywność | Owner | tak | ⏳ |
+| `/zwierzeta/:id` | ekran zwierzęcia: dane, zdrowie, aktywność, tryb zaginięcia | Owner | tak | 🔄 |
 | `/zwierzeta/:id/edytuj` | edycja | Owner | tak | ⏳ |
-| `/zwierzeta/:id/zaginiecie` | tryb zaginięcia | Owner | tak | ⏳ |
 | `/zwierzeta/:id/tag` | zawieszka, QR, historia skanowań | Owner | tak | ⏳ |
-| `/zwierzeta/:id/vet-share` | link dla weterynarza (P2) | Owner | tak | ⏳ |
-| `/spacery`, `/spacery/nowy`, `/spacery/:id` | spacery (P2) | Owner | tak | ⏳ |
-| `/harmonogram` | przypomnienia (P3) | Owner | tak | ⏳ |
 | `/ustawienia` | imię, telefon dla znalazców, wylogowanie | Owner | tak | ⏳ |
 | `/dev/ui` | galeria komponentów | Public | — | ✅ |
 | `*` | 404 | Public | — | ✅ |
 
-Ochrona tras panelu (`RequireAuth`) powstaje w etapie 1. Opis widoków: [`plan/03-widoki-i-trasy.md`](plan/03-widoki-i-trasy.md).
+Ochrona tras panelu (`RequireAuth`) powstaje w sesji 23. Opis widoków: [`plan/03-widoki-i-trasy.md`](plan/03-widoki-i-trasy.md).
 
 ## Zasady pracy z kodem
 
@@ -211,16 +201,15 @@ Ochrona tras panelu (`RequireAuth`) powstaje w etapie 1. Opis widoków: [`plan/0
 
 | Kamień milowy | Termin | Stan |
 |---|---|---|
-| M1 Logowanie i dane działają | 8.11.2026 | 🔄 |
-| M2 Panel właściciela | 22.11.2026 | ⏳ |
-| M3 Rdzeń aplikacji klienckiej (strona zawieszki) | 6.12.2026 | ⏳ |
-| M4 Aplikacja dostępna online jako PWA | 13.12.2026 | ⏳ |
-| M5 API gotowe | 3.01.2027 | ⏳ |
-| M6 System zintegrowany | 10.01.2027 | ⏳ |
-| M7 Praca gotowa do złożenia | 24.01.2027 | ⏳ |
+| M1 Logowanie na serwerze | 22.11.2026 | 🔄 |
+| M2 Panel właściciela | 6.12.2026 | ⏳ |
+| M3 Aplikacja online jako PWA | 13.12.2026 | ⏳ |
+| M4 Rdzeń systemu (strona zawieszki) | 3.01.2027 | ⏳ |
+| M5 System przetestowany | 17.01.2027 | ⏳ |
+| M6 Praca gotowa do złożenia | 24.01.2027 | ⏳ |
 
-**Zrobione:** konfiguracja projektu i tokenów, mapa tras, 5 layoutów z nawigacją, komplet komponentów UI, dane przykładowe i baza w `localStorage`, `useAsync`, lista zwierząt w panelu.
-**Teraz:** logowanie magic link na danych przykładowych, kontekst `useAuth`, ochrona tras.
+**Zrobione:** konfiguracja projektu i tokenów, mapa tras, layouty, komponenty UI, `useAsync`, ekran zwierzęcia z przełącznikiem i arkuszem „Akcje”, formularz logowania na danych przykładowych.
+**Teraz:** porządki, serwer Express, PostgreSQL i logowanie PIN-em (sesje 17–24).
 
 Lista zadań: [`plan/06-harmonogram.md`](plan/06-harmonogram.md).
 
@@ -238,6 +227,7 @@ Lista zadań: [`plan/06-harmonogram.md`](plan/06-harmonogram.md).
 | [`07-praca-pisemna.md`](plan/07-praca-pisemna.md) | konspekt pracy dyplomowej |
 | [`08-ankieta.md`](plan/08-ankieta.md) | badanie ankietowe |
 | [`09-testy.md`](plan/09-testy.md) | scenariusze testów na urządzeniach |
+| [Plan przepisywania](<plan/PeTrace — plan przepisywania.html>) | sesje krok po kroku, postęp, pytania na obronę |
 
 ## Autor
 
