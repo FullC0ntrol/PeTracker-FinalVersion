@@ -16,7 +16,7 @@ Zeskanowanie zawieszki dowolnym smartfonem otwiera stronę w przeglądarce, bez 
 ## Uruchomienie (aplikacja kliencka)
 
 ```bash
-cd petracer-final   # docelowo client/ (etap 4)
+cd client         # do sesji 17 folder nazywa się petracer-final
 npm install
 npm run dev       # serwer deweloperski
 npm run build     # wersja produkcyjna
@@ -29,13 +29,13 @@ npm run lint      # analiza kodu
 ```
 ├── client/              # aplikacja webowa
 ├── server/              # API (w realizacji)
-├── docs/                # dokumentacja projektu (obecnie folder plan/)
+├── plan/                # dokumentacja projektu
 └── docker-compose.yml   # uruchomienie całego systemu (w realizacji)
 ```
 
 ## Dokumentacja
 
-Pełna dokumentacja w folderze [`plan/`](00-start.md) (docelowo `docs/`): zakres, przypadki użycia, widoki, architektura, dziennik decyzji, harmonogram i plan testów.
+Pełna dokumentacja w folderze [`plan/`](00-start.md): zakres, przypadki użycia, widoki, architektura, dziennik decyzji, harmonogram i plan testów.
 
 ## Autor
 

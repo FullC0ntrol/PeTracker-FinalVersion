@@ -7,6 +7,8 @@ import NotFoundPage from "./pages/public/NotFoundPage";
 import LandingPage from "./pages/public/LandingPage";
 import Placeholder from './pages/Placeholder';
 import DashboardPage from './pages/owner/DashboardPage';
+import LoginPage from './pages/public/LoginPage';
+import CheckEmailPage from './pages/public/CheckEmailPage'
 
 import PublicLayout from './components/layout/PublicLayout';
 import RootLayout from './components/layout/RootLayout';
@@ -22,7 +24,8 @@ export const router = createBrowserRouter([
         element: <PublicLayout />,
         children: [
           { index: true, element: <LandingPage />},
-          { path: 'login', element: <Placeholder title="Logowanie" />},
+          { path: 'login', element: <LoginPage />},
+          { path: 'login/sprawdz-poczte', element: <CheckEmailPage /> },
           { path: 'auth/verify', element: <Placeholder title="Weryfikacja logowania" />},
           { path: 'dev/ui', element: <UiGalleryPage />},
           { path: '*', element: <NotFoundPage />}
