@@ -1,18 +1,11 @@
-/*
-  PIN nigdy nie trafia do bazy — tylko jego skrót w formacie `sól:skrót` (D21).
-
-  - Skrótu nie da się odwrócić. Przy logowaniu liczymy skrót wpisanego PIN-u i porównujemy z zapisanym.
-  - Sól to losowy napis osobny dla każdego konta: ten sam PIN daje za każdym razem inny skrót.
-  - `scrypt` jest celowo wolny i zużywa dużo pamięci. SHA-256 policzyłby milion PIN-ów w ułamku sekundy.
-  - `timingSafeEqual` porównuje zawsze tak samo długo, więc czas odpowiedzi nic nie zdradza.
-*/
-
 import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import { promisify } from 'node:util'
 
+// scrypt jest celowo wolny, żeby zgadywanie PIN-ów po wycieku bazy trwało bardzo długo.
 const scryptAsync = promisify(scrypt)
 const KEY_LENGTH = 64
 
+// Zapisujemy „sól:skrót”, a losowa sól sprawia, że ten sam PIN daje na każdym koncie inny skrót.
 export async function hashPin(pin) {
   const salt = randomBytes(16).toString('hex')
   const key = await scryptAsync(pin, salt, KEY_LENGTH)
@@ -22,7 +15,9 @@ export async function hashPin(pin) {
 export async function verifyPin(pin, stored) {
   const [salt, expectedHex = ''] = stored.split(':')
   const expected = Buffer.from(expectedHex, 'hex')
+  // timingSafeEqual rzuca błąd przy różnych długościach, więc uszkodzony skrót odrzucamy wcześniej.
   if (expected.length !== KEY_LENGTH) return false
   const key = await scryptAsync(pin, salt, KEY_LENGTH)
+  // Porównanie trwa zawsze tyle samo, więc czas odpowiedzi nie zdradza, ile znaków się zgadza.
   return timingSafeEqual(key, expected)
 }

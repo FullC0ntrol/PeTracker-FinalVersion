@@ -1,25 +1,15 @@
 import jwt from 'jsonwebtoken'
 import { config } from '../config.js'
 
-/*
-  Sesja = podpisany token JWT w ciasteczku.
-
-  JWT zawiera id użytkownika (`sub`) i datę ważności, a do tego podpis zrobiony sekretem
-  z JWT_SECRET. Serwer nie musi trzymać listy sesji: przy każdym żądaniu sprawdza podpis
-  i wie, że tokenu nikt nie podrobił ani nie zmienił.
-
-  Ciasteczko:
-  - httpOnly — JavaScript na stronie go nie widzi (kradzież przez XSS jest niemożliwa),
-  - secure — wysyłane tylko przez HTTPS (w produkcji),
-  - sameSite=lax — przeglądarka nie dołączy go do POST-a wysłanego z cudzej strony (ochrona przed CSRF).
-*/
-
+// Sesja to podpisany token JWT z id użytkownika, więc serwer nie musi trzymać listy sesji.
 export const SESSION_COOKIE = 'petrace_session'
 const SESSION_DAYS = 30
 
 const cookieOptions = {
+  // Skrypt na stronie nie odczyta ciasteczka, więc nie ukradnie go przez XSS.
   httpOnly: true,
   secure: config.cookieSecure,
+  // Przeglądarka nie dołączy ciasteczka do POST-a wysłanego z obcej strony.
   sameSite: 'lax',
   path: '/',
 }
@@ -32,11 +22,12 @@ export function setSessionCookie(res, userId) {
   })
 }
 
+// Przeglądarka usunie ciasteczko tylko wtedy, gdy opcje są takie same jak przy ustawianiu.
 export function clearSessionCookie(res) {
   res.clearCookie(SESSION_COOKIE, cookieOptions)
 }
 
-// Zwraca id użytkownika z ważnego tokenu albo null (brak ciasteczka, zły podpis, wygasł).
+// Brak ciasteczka, zły podpis i wygasły token dają null.
 export function readSessionUserId(req) {
   const token = req.cookies?.[SESSION_COOKIE]
   if (!token) return null

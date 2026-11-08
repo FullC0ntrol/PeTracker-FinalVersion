@@ -1,6 +1,7 @@
 import { query } from '../db.js'
 import { readSessionUserId } from '../services/session.js'
 
+// Ustawia req.user (albo null), ale nie blokuje niezalogowanych.
 export async function loadUser(req, res, next) {
   const userId = readSessionUserId(req)
   req.user = null

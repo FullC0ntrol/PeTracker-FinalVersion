@@ -1,7 +1,10 @@
 import { HttpError } from '../errors.js'
 
+// Liczniki są w pamięci procesu, więc restart serwera je zeruje.
 export function rateLimit({ windowMs, max, keyFn, message }) {
   const hits = new Map()
+
+  // unref() pozwala zamknąć proces, mimo że ten timer dalej działa.
   setInterval(() => {
     const now = Date.now()
     for (const [key, entry] of hits) if (entry.resetAt <= now) hits.delete(key)
