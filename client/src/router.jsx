@@ -13,7 +13,6 @@ import CheckEmailPage from './pages/public/CheckEmailPage'
 import PublicLayout from './components/layout/PublicLayout';
 import RootLayout from './components/layout/RootLayout';
 import FinderLayout from './components/layout/FinderLayout';
-import VetLayout from './components/layout/VetLayout';
 import OwnerLayout from './components/layout/OwnerLayout';
 
 export const router = createBrowserRouter([
@@ -36,14 +35,8 @@ export const router = createBrowserRouter([
         element: <FinderLayout />,
         children: [
           { index: true , element: <Placeholder title="Strona tagu" />},
-          { path: 'lokalizacja', element: <Placeholder title="Udostępnij lokalizację" />},
-          { path: 'wyslano', element: <Placeholder title="Lokalizacja wysłana" />}
+          { path: 'lokalizacja', element: <Placeholder title="Udostępnij lokalizację" />}
         ]
-      },
-      {
-        path: 'vet/:shareToken',
-        element: <VetLayout />,
-        children: [{ index: true, element: <Placeholder title="Paszport medyczny" />}]
       },
       {
         // RequireAuth
@@ -55,13 +48,7 @@ export const router = createBrowserRouter([
               { path: 'zwierzeta/nowe', element: <Placeholder title="Nowe zwierzę" />},
               { path: 'zwierzeta/:id', element: <PetProfilePage />},
               { path: 'zwierzeta/:id/edytuj', element: <Placeholder title="Edycja zwierzęcia" />},
-              { path: 'zwierzeta/:id/zaginiecie', element: <Placeholder title="Tryb zaginięcia" />},
-              { path: 'zwierzeta/:id/vet-share', element: <Placeholder title="Udostępnienie weterynarzowi" />},
               { path: 'zwierzeta/:id/tag', element: <Placeholder title="Tag zwierzęcia" />},
-              { path: 'spacery', element: <Placeholder title="Spacery" />},
-              { path: 'spacery/nowy', element: <Placeholder title="Nowy spacer" />},
-              { path: 'spacery/:id' , element: <Placeholder title="Szczegóły spaceru" />},
-              { path: 'harmonogram', element: <Placeholder title="Harmonogram" />},
               { path: 'ustawienia', element: <Placeholder title="Ustawienia" />}
             ]
           }
