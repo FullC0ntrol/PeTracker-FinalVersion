@@ -1,4 +1,4 @@
-export default function PageHeader({ title, description, action}) {
+export default function PageHeader({ title, description, action }) {
   return (
     <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>

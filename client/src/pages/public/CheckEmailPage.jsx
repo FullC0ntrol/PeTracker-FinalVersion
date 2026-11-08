@@ -27,8 +27,8 @@ export default function CheckEmailPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold tracking-tight">Sprawdź pocztę</h1>
         <p className="text-ink-muted">
-          Wysłaliśmy link do logowania na <strong className="text-ink">{state.email}</strong>. Kliknij go, aby przejść
-          do panelu. Link jest ważny 15 minut i działa tylko raz.
+          Wysłaliśmy link do logowania na <strong className="text-ink">{state.email}</strong>.
+          Kliknij go, aby przejść do panelu. Link jest ważny 15 minut i działa tylko raz.
         </p>
       </div>
       {/* `devLink` zwraca tylko tryb mock i serwer w trybie deweloperskim. W produkcji

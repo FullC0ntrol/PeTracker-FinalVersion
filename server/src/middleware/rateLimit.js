@@ -7,7 +7,7 @@ export function rateLimit({ windowMs, max, keyFn, message }) {
     for (const [key, entry] of hits) if (entry.resetAt <= now) hits.delete(key)
   }, windowMs).unref()
 
-    return function rateLimitMiddleware(req, res, next) {
+  return function rateLimitMiddleware(req, res, next) {
     const key = keyFn(req)
     const now = Date.now()
     const entry = hits.get(key)

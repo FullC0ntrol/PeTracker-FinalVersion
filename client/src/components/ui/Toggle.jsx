@@ -14,7 +14,10 @@ export default function Toggle({ checked, onChange, label, description, disabled
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <label htmlFor={id} className={cn('font-medium', disabled ? 'text-ink-muted' : 'cursor-pointer')}>
+        <label
+          htmlFor={id}
+          className={cn('font-medium', disabled ? 'text-ink-muted' : 'cursor-pointer')}
+        >
           {label}
         </label>
         {description && (

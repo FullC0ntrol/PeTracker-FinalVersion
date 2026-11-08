@@ -14,7 +14,8 @@ function text(value, maxLength, fieldLabel) {
 
 export function parseEmail(value) {
   const email = typeof value === 'string' ? value.trim().toLowerCase() : ''
-  if (!EMAIL_PATTERN.test(email) || email.length > 254) throw new HttpError(400, 'Wpisz poprawny adres e-mail.')
+  if (!EMAIL_PATTERN.test(email) || email.length > 254)
+    throw new HttpError(400, 'Wpisz poprawny adres e-mail.')
   return email
 }
 
@@ -25,6 +26,7 @@ export function parseName(value) {
 }
 
 export function parsePin(value) {
-  if (typeof value !== 'string' || !/^\d{6}$/.test(value)) throw new HttpError(400, 'PIN musi mieć dokładnie 6 cyfr.')
+  if (typeof value !== 'string' || !/^\d{6}$/.test(value))
+    throw new HttpError(400, 'PIN musi mieć dokładnie 6 cyfr.')
   return value
 }

@@ -9,7 +9,11 @@ export default function Select({ label, hint, error, className = '', children, .
     <FormField label={label} hint={hint} error={error}>
       {(fieldProps) => (
         <div className="relative">
-          <select {...rest} {...fieldProps} className={fieldClasses(Boolean(error), `appearance-none pr-10 ${className}`)}>
+          <select
+            {...rest}
+            {...fieldProps}
+            className={fieldClasses(Boolean(error), `appearance-none pr-10 ${className}`)}
+          >
             {children}
           </select>
           <ChevronDown

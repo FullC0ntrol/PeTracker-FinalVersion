@@ -12,10 +12,9 @@ export function delay(minMs = 200, maxMs = 500) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-
 export function toPet(db, pet) {
   const tag = db.tags.find((item) => item.petId === pet.id && item.isActive)
-   return {
+  return {
     id: pet.id,
     name: pet.name,
     species: pet.species,

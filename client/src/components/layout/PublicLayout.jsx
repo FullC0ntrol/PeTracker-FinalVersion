@@ -1,8 +1,8 @@
-import { Outlet} from 'react-router'
+import { Outlet } from 'react-router'
 import Logo from './Logo.jsx'
 import Button from '../ui/Button.jsx'
 
-export default function PublicLayout(){
+export default function PublicLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">

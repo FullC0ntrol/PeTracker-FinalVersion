@@ -26,7 +26,10 @@ export default function FormField({ label, hint, error, children }) {
       </label>
       {children(fieldProps)}
       {message && (
-        <p id={messageId} className={error ? 'text-sm font-medium text-alert' : 'text-sm text-ink-muted'}>
+        <p
+          id={messageId}
+          className={error ? 'text-sm font-medium text-alert' : 'text-sm text-ink-muted'}
+        >
           {message}
         </p>
       )}

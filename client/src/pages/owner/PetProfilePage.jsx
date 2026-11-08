@@ -57,8 +57,11 @@ export default function PetProfilePage() {
 
 // Duża karta u góry: zielona, a przy zaginięciu czerwona — stan widać zanim cokolwiek przeczytasz.
 function PetHero({ pet }) {
-  const details = [speciesLabel(pet.species), pet.breed, formatAge(pet.birthDate)].filter(Boolean).join(' · ')
-  const chip = 'inline-flex items-center gap-1.5 rounded-full bg-paper/20 px-3 py-1.5 transition-colors hover:bg-paper/30'
+  const details = [speciesLabel(pet.species), pet.breed, formatAge(pet.birthDate)]
+    .filter(Boolean)
+    .join(' · ')
+  const chip =
+    'inline-flex items-center gap-1.5 rounded-full bg-paper/20 px-3 py-1.5 transition-colors hover:bg-paper/30'
 
   return (
     <section
@@ -69,17 +72,30 @@ function PetHero({ pet }) {
       )}
     >
       {/* Dekoracyjne koła w tle — czysty CSS, bez grafik. */}
-      <span aria-hidden="true" className="absolute -top-16 -right-12 size-48 rounded-full bg-paper/10" />
-      <span aria-hidden="true" className="absolute -bottom-20 left-20 size-40 rounded-full bg-paper/10" />
+      <span
+        aria-hidden="true"
+        className="absolute -top-16 -right-12 size-48 rounded-full bg-paper/10"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-20 left-20 size-40 rounded-full bg-paper/10"
+      />
 
       <div className="relative flex items-center gap-4">
-        <PetAvatar name={pet.name} species={pet.species} size="lg" className="ring-4 ring-paper/40" />
+        <PetAvatar
+          name={pet.name}
+          species={pet.species}
+          size="lg"
+          className="ring-4 ring-paper/40"
+        />
         <div className="min-w-0">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-paper/20 px-2.5 py-0.5 text-xs font-bold">
             {pet.isLost ? <Siren size={14} aria-hidden="true" /> : null}
             {pet.isLost ? 'Zaginione' : 'Bezpieczne w domu'}
           </p>
-          <h1 className="mt-1.5 truncate text-3xl font-extrabold tracking-tight sm:text-4xl">{pet.name}</h1>
+          <h1 className="mt-1.5 truncate text-3xl font-extrabold tracking-tight sm:text-4xl">
+            {pet.name}
+          </h1>
           <p className="truncate text-sm opacity-85">{details}</p>
         </div>
       </div>

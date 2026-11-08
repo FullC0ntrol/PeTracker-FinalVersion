@@ -26,7 +26,10 @@ const cookieOptions = {
 
 export function setSessionCookie(res, userId) {
   const token = jwt.sign({ sub: userId }, config.jwtSecret, { expiresIn: `${SESSION_DAYS}d` })
-  res.cookie(SESSION_COOKIE, token, { ...cookieOptions, maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000 })
+  res.cookie(SESSION_COOKIE, token, {
+    ...cookieOptions,
+    maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
+  })
 }
 
 export function clearSessionCookie(res) {

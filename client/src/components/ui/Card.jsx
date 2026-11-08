@@ -6,14 +6,16 @@ const PADDINGS = {
   md: 'p-6',
 }
 
-export default function Card({ as:Component = 'div', padding = 'md', className = '', children, ...rest}) {
+export default function Card({
+  as: Component = 'div',
+  padding = 'md',
+  className = '',
+  children,
+  ...rest
+}) {
   return (
     <Component
-      className={cn(
-        'rounded-2xl bg-surface shadow-card',
-        PADDINGS[padding],
-        className
-      )}
+      className={cn('rounded-2xl bg-surface shadow-card', PADDINGS[padding], className)}
       {...rest}
     >
       {children}

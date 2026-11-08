@@ -13,7 +13,7 @@ const SIZES = {
   xl: 'size-40 rounded-3xl text-7xl',
 }
 
-export default function PetAvatar({ name, species, size = "md", isLost = false, className = '' }) {
+export default function PetAvatar({ name, species, size = 'md', isLost = false, className = '' }) {
   return (
     <span
       aria-hidden="true"
@@ -22,7 +22,7 @@ export default function PetAvatar({ name, species, size = "md", isLost = false, 
         SPECIES_TONES[species] ?? SPECIES_TONES.other,
         SIZES[size],
         isLost && 'ring-4 ring-alert',
-        className
+        className,
       )}
     >
       {name?.trim().charAt(0).toUpperCase() || '?'}

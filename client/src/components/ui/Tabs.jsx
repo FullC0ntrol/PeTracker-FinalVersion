@@ -54,7 +54,9 @@ export default function Tabs({ tabs, activeTab, onChange, label, children }) {
               onClick={() => onChange(tab.id)}
               className={cn(
                 '-mb-px border-b-2 px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors',
-                isActive ? 'border-pine text-pine' : 'border-transparent text-ink-muted hover:text-ink',
+                isActive
+                  ? 'border-pine text-pine'
+                  : 'border-transparent text-ink-muted hover:text-ink',
               )}
             >
               {tab.label}

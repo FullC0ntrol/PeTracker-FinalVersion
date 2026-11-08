@@ -19,7 +19,12 @@ export default function PetActionsSheet({ open, onClose, pet }) {
       hint: pet.tagCode ? `Kod ${pet.tagCode}` : 'Utwórz kod QR',
       to: `/zwierzeta/${pet.id}/tag`,
     },
-    { icon: Pencil, label: 'Edytuj profil', hint: 'Dane i zdrowie', to: `/zwierzeta/${pet.id}/edytuj` },
+    {
+      icon: Pencil,
+      label: 'Edytuj profil',
+      hint: 'Dane i zdrowie',
+      to: `/zwierzeta/${pet.id}/edytuj`,
+    },
     ...(pet.tagCode
       ? [{ icon: Eye, label: 'Oczami znalazcy', hint: 'Strona zawieszki', to: `/t/${pet.tagCode}` }]
       : []),

@@ -42,7 +42,10 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-sm">
-      <PageHeader title="Zaloguj się" description="Wyślemy Ci na e-mail link do logowania — bez hasła." />
+      <PageHeader
+        title="Zaloguj się"
+        description="Wyślemy Ci na e-mail link do logowania — bez hasła."
+      />
       {/* noValidate: wyłączamy dymki walidacji przeglądarki, żeby błąd wyglądał tak jak reszta aplikacji. */}
       <Card as="form" onSubmit={handleSubmit} noValidate className="space-y-4">
         <Input

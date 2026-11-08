@@ -5,7 +5,12 @@ export default function Textarea({ label, hint, error, rows = 4, className = '',
   return (
     <FormField label={label} hint={hint} error={error}>
       {(fieldProps) => (
-        <textarea {...rest} {...fieldProps} rows={rows} className={fieldClasses(Boolean(error), `resize-y ${className}`)} />
+        <textarea
+          {...rest}
+          {...fieldProps}
+          rows={rows}
+          className={fieldClasses(Boolean(error), `resize-y ${className}`)}
+        />
       )}
     </FormField>
   )

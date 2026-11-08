@@ -17,7 +17,8 @@ export default function DashboardPage() {
   const { data: pets, error, isLoading, reload } = useAsync(getPets, [])
 
   if (isLoading) return <Spinner showLabel label="Wczytuję zwierzęta…" />
-  if (error) return <ErrorState title="Nie udało się wczytać zwierząt" error={error} onRetry={reload} />
+  if (error)
+    return <ErrorState title="Nie udało się wczytać zwierząt" error={error} onRetry={reload} />
 
   if (pets.length > 0) {
     const lastId = getLastPetId()

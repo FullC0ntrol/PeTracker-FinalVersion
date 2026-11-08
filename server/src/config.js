@@ -4,7 +4,6 @@ dotenv.config({ quiet: true })
 
 const isProduction = process.env.NODE_ENV === 'production'
 
-
 function required(name, fallbackForDev) {
   const value = process.env[name]
   if (value) return value
@@ -23,4 +22,3 @@ export const config = {
   jwtSecret: required('JWT_SECRET', 'dev-only-secret-change-me'),
   cookieSecure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 'true' : isProduction,
 }
-

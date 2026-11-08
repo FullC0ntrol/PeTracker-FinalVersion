@@ -3,7 +3,7 @@
 const KEY = 'pettrace:lastPet'
 
 export function getLastPetId() {
-  try{
+  try {
     return localStorage.getItem(KEY)
   } catch {
     return null

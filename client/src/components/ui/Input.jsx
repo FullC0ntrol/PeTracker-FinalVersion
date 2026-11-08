@@ -5,7 +5,9 @@ import { fieldClasses } from './fieldClasses.js'
 export default function Input({ label, hint, error, className = '', ...rest }) {
   return (
     <FormField label={label} hint={hint} error={error}>
-      {(fieldProps) => <input {...rest} {...fieldProps} className={fieldClasses(Boolean(error), className)} />}
+      {(fieldProps) => (
+        <input {...rest} {...fieldProps} className={fieldClasses(Boolean(error), className)} />
+      )}
     </FormField>
   )
 }

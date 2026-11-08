@@ -1,8 +1,8 @@
-import { useParams } from 'react-router';
-import PageHeader from '../components/layout/PageHeader';
+import { useParams } from 'react-router'
+import PageHeader from '../components/layout/PageHeader'
 
 export default function Placeholder({ title }) {
-  const params = useParams();
+  const params = useParams()
   const entries = Object.entries(params)
 
   return (
