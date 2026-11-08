@@ -1,10 +1,9 @@
-// parse*: przyjmuje surową wartość z req.body, zwraca oczyszczoną albo rzuca HttpError 400.
+// Każda funkcja parse* zwraca poprawioną wartość albo rzuca błąd 400.
 import { HttpError } from './errors.js'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PIN_PATTERN = /^\d{6}$/
 
-// Pole tekstowe nieobowiązkowe: brak → '', zawsze przycięte, z limitem długości.
 function text(value, maxLength, fieldLabel) {
   if (value === undefined || value === null) return ''
   if (typeof value !== 'string') throw new HttpError(400, `Pole „${fieldLabel}” ma zły format.`)
@@ -15,7 +14,6 @@ function text(value, maxLength, fieldLabel) {
   return trimmed
 }
 
-// Małe litery: Ola@Example.com i ola@example.com to to samo konto.
 export function parseEmail(value) {
   const email = typeof value === 'string' ? value.trim().toLowerCase() : ''
   if (!EMAIL_PATTERN.test(email) || email.length > 254) {
@@ -30,7 +28,7 @@ export function parseName(value) {
   return name
 }
 
-// Napis, nie liczba: liczba zgubiłaby zera z przodu ("012345" → 12345).
+// PIN jest napisem, bo liczba zgubiłaby zera z przodu.
 export function parsePin(value) {
   if (typeof value !== 'string' || !PIN_PATTERN.test(value)) {
     throw new HttpError(400, 'PIN musi mieć dokładnie 6 cyfr.')

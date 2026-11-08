@@ -10,7 +10,7 @@ export default defineConfig([
       globals: globals.node,
     },
     rules: {
-      // Parametr z „_” na początku = celowo nieużywany (np. `_next` w errorHandler).
+      // Parametr zaczynający się od _ jest celowo nieużywany.
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
