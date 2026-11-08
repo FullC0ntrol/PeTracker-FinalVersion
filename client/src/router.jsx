@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router'
 
-import UiGalleryPage from "./pages/dev/UiGalleryPage";
 import PetProfilePage from './pages/owner/PetProfilePage'
 
 import NotFoundPage from "./pages/public/NotFoundPage";
@@ -26,7 +25,6 @@ export const router = createBrowserRouter([
           { path: 'login', element: <LoginPage />},
           { path: 'login/sprawdz-poczte', element: <CheckEmailPage /> },
           { path: 'auth/verify', element: <Placeholder title="Weryfikacja logowania" />},
-          { path: 'dev/ui', element: <UiGalleryPage />},
           { path: '*', element: <NotFoundPage />}
         ]
       },

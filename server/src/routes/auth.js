@@ -5,6 +5,8 @@ import { toUser } from "../mappers.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { hashPin, verifyPin } from "../services/pin.js";
 import { parseEmail, parseName, parsePin } from "../validation.js";
+import { loadUser } from "../middleware/requireAuth.js";
+import { clearSessionCookie, setSessionCookie } from "../services/session.js";
 
 export const authRouter = Router();
 
@@ -34,6 +36,7 @@ authRouter.post("/register", limitRegisterByIp, async (req, res) => {
       409,
       "Konto z tym adresem e-mail już istnieje. Zaloguj się.",
     );
+  setSessionCookie(res, rows[0].id);
   res.status(201).json({ user: toUser(rows[0]) });
 });
 
@@ -48,5 +51,21 @@ authRouter.post("/login", async (req, res) => {
   if (!rows[0] || !(await verifyPin(pin, rows[0].pin_hash))) {
     throw new HttpError(401, "Nieprawidłowy e-mail lub PIN.");
   }
+  setSessionCookie(res, rows[0].id)
   res.json({ user: toUser(rows[0]) });
 });
+
+/*
+  GET /api/auth/me — „kim jestem?”, wołane przy każdym starcie aplikacji.
+  Niezalogowany dostaje 200 z `user: null` zamiast 401: to normalna sytuacja, a nie błąd,
+  i przeglądarka nie pokazuje wtedy czerwonego wpisu w konsoli.
+*/
+
+authRouter.get('/me', loadUser, (req, res) => {
+  res.json({ user: req.user ? toUser(req.user) : null })
+})
+
+authRouter.post('/logout', (req, res) => {
+  clearSessionCookie(res)
+  res.status(204).end()
+})

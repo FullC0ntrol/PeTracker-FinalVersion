@@ -20,4 +20,7 @@ export const config = {
   port: Number(process.env.PORT ?? 3000),
   databaseUrl: required('DATABASE_URL', 'postgres://petrace:petrace@localhost:5434/petrace'),
   seedDemoData: process.env.SEED_DEMO_DATA === 'true',
+  jwtSecret: required('JWT_SECRET', 'dev-only-secret-change-me'),
+  cookieSecure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 'true' : isProduction,
 }
+

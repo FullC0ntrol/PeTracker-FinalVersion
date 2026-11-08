@@ -1,6 +1,7 @@
 import express from "express";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 import { authRouter } from "./routes/auth.js";
+import cookieParser from 'cookie-parser'
 
 export function createApp() {
   const app = express();
@@ -10,7 +11,7 @@ export function createApp() {
   app.get("/api/health", (req, res) => {
     res.json({ ok: true });
   });
-
+   app.use(cookieParser())
   app.use("/api/auth", authRouter);
   app.use('/api', notFound)
   app.use(errorHandler)
