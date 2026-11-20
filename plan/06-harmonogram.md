@@ -54,8 +54,6 @@ gantt
 
 Konsultacje z promotorem planowane są **przed rozpoczęciem logowania PIN-em (zmiana zakresu)**, po kamieniach M1, M3, M5 i przed M6.
 
-Szczegółowa lista sesji: `PLAN_PRZEPISYWANIA.md` oraz [plan w HTML](PeTrace%20—%20plan%20przepisywania.html).
-
 ## Zadania
 
 ### Etap 1 · Fundamenty i układ panelu (19.10–6.11)

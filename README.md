@@ -1,234 +1,552 @@
-# PeTrace
+<div align="center">
 
-**System identyfikacji i lokalizacji zwierząt domowych oparty na zawieszkach NFC/QR i aplikacji webowej PWA z routingiem kontekstowym.**
+# 🐾 PeTrace
 
-Praca inżynierska · Maciej Strączek · Wyższa Szkoła Turystyki i Ekologii w Suchej Beskidzkiej · 2026/2027
+**System lokalizacji, identyfikacji i zarządzania aktywnością zwierząt domowych<br/>oparty na zawieszkach NFC / QR i aplikacji webowej PWA z routingiem kontekstowym**
 
-> **Stan:** interfejs panelu częściowo gotowy, teraz powstają serwer, baza danych i logowanie PIN-em.
-> Szczegóły w sekcji [Stan prac](#stan-prac).
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-22-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+Praca inżynierska · kierunek Informatyka<br/>
+Wyższa Szkoła Turystyki i Ekologii w Suchej Beskidzkiej · 2026/2027<br/>
+Autor: **Maciej Strączek**
+
+</div>
 
 ---
 
 ## Spis treści
 
-- [Problem](#problem)
-- [Jak to działa](#jak-to-działa)
-- [Zakres funkcji](#zakres-funkcji)
-- [Architektura](#architektura)
-- [Technologie](#technologie)
-- [Uruchomienie](#uruchomienie)
-- [Struktura repozytorium](#struktura-repozytorium)
-- [Trasy](#trasy)
-- [Zasady pracy z kodem](#zasady-pracy-z-kodem)
-- [Stan prac](#stan-prac)
-- [Dokumentacja](#dokumentacja)
+1. [Problem i cel projektu](#1-problem-i-cel-projektu)
+2. [Zasada działania](#2-zasada-działania)
+3. [Routing kontekstowy](#3-routing-kontekstowy)
+4. [Architektura systemu](#4-architektura-systemu)
+5. [Model danych](#5-model-danych)
+6. [API](#6-api)
+7. [Uwierzytelnianie i bezpieczeństwo](#7-uwierzytelnianie-i-bezpieczeństwo)
+8. [Aplikacja kliencka](#8-aplikacja-kliencka)
+9. [Technologie](#9-technologie)
+10. [Uruchomienie](#10-uruchomienie)
+11. [Struktura repozytorium](#11-struktura-repozytorium)
+12. [Stan realizacji](#12-stan-realizacji)
+13. [Dokumentacja](#13-dokumentacja)
 
 ---
 
-## Problem
+## 1. Problem i cel projektu
 
-Zagubione zwierzę najczęściej znajduje przypadkowa osoba. Adresówka bywa nieczytelna albo nieaktualna, mikroczip wymaga czytnika, a aplikacje mobilne wymagają od obcej osoby instalacji programu, zanim w ogóle może pomóc.
+Zagubione zwierzę najczęściej znajduje przypadkowa osoba. Istniejące metody identyfikacji mają istotne ograniczenia:
 
-## Jak to działa
+| Metoda | Ograniczenie |
+|---|---|
+| Adresówka z numerem telefonu | ulega zatarciu, dane szybko się dezaktualizują, brak kontekstu (choroby, leki) |
+| Mikroczip | wymaga czytnika, którego znalazca nie posiada — odczyt możliwy dopiero u weterynarza lub w schronisku |
+| Aplikacje mobilne / lokalizatory GPS | wymagają instalacji aplikacji przez obcą osobę lub abonamentu i ładowania baterii |
 
-Na zawieszce jest tag NFC i kod QR z unikalnym adresem, np. `petracker.pl/t/K7Q2-M9XD`. Zeskanowanie dowolnym smartfonem otwiera stronę w przeglądarce, **bez instalowania aplikacji**.
+**Cel:** zaprojektowanie i implementacja systemu, w którym znalazca **bez instalowania czegokolwiek** — samym zbliżeniem telefonu (NFC) lub zeskanowaniem aparatem (QR) — otrzymuje informacje potrzebne do pomocy zwierzęciu i kontaktu z opiekunem, a właściciel zyskuje narzędzie do codziennej ewidencji opieki.
 
-Ten sam adres prowadzi do różnych widoków zależnie od tego, kto skanuje i w jakiej sytuacji jest zwierzę. To jest **routing kontekstowy**, a decyzję podejmuje serwer:
+### Wymagania niefunkcjonalne
 
-```mermaid
-flowchart TD
-  S([Skan zawieszki: /t/:tagId]) --> A{Tag istnieje<br/>i jest przypisany?}
-  A -- nie --> V1[Tag nieaktywny]
-  A -- tak --> B{Skanuje zalogowany<br/>właściciel?}
-  B -- tak --> V2[Szybki zapis:<br/>Karmienie / Spacer]
-  B -- nie --> C{Zwierzę oznaczone<br/>jako zaginione?}
-  C -- tak --> V3[Widok alarmowy:<br/>komunikat, telefon, SMS z lokalizacją]
-  C -- nie --> V4[Widok znalazcy:<br/>imię, uwagi medyczne, Zadzwoń]
+| Wymaganie | Realizacja |
+|---|---|
+| Brak instalacji po stronie znalazcy | standardowy adres URL otwierany w przeglądarce, obsługa NFC i QR natywnie przez system telefonu |
+| Prywatność | dane osobowe właściciela ujawniane wyłącznie w trybie zaginięcia; lokalizacja znalazcy nie jest zapisywana na serwerze |
+| Bezpieczeństwo | PIN przechowywany jako skrót `scrypt` z solą, sesja w ciasteczku `httpOnly`, limity prób logowania |
+| Dostępność mobilna | interfejs *mobile-first*, duże elementy dotykowe, obsługa klawiatury i atrybutów `aria-*` |
+| Instalowalność | aplikacja PWA (manifest, service worker) dla właściciela |
+| Przenośność wdrożenia | konteneryzacja Docker Compose, jedna domena z automatycznym HTTPS |
+
+---
+
+## 2. Zasada działania
+
+Na zawieszce znajduje się **tag NFC** (rekord NDEF typu URI) oraz **kod QR** kodujące ten sam unikalny adres:
+
 ```
-
-Kontrola „właściciel” jest przed „zaginione”, żeby opiekun, który odnalazł swoje zwierzę, nie zobaczył alarmu przeznaczonego dla znalazców. Każdy skan trafia do historii skanowań.
-
-**Prywatność:** poza trybem zaginięcia dane właściciela nie są pokazywane. Lokalizacja znalazcy trafia prosto do SMS-a i nie jest zapisywana w systemie.
-
-## Zakres funkcji
-
-Pełny opis w [`plan/01-zakres.md`](plan/01-zakres.md).
-
-| Priorytet | Funkcja | Stan |
-|---|---|---|
-| **1 — rdzeń** | Strona zawieszki z czterema wariantami | ⏳ |
-| | Wysłanie lokalizacji znalazcy SMS-em (`sms:` z linkiem do mapy) | ⏳ |
-| | Tryb zaginięcia z komunikatem dla znalazcy | ⏳ |
-| | Konto i logowanie e-mailem i PIN-em | 🔄 |
-| | Zwierzęta: lista, dodawanie, profil, edycja | 🔄 |
-| | Zawieszka: kod, QR do wydruku, adres do zapisu na NFC | ⏳ |
-| | Szybki zapis aktywności po skanie i lista z 7 dni | ⏳ |
-| | Historia skanowań | ⏳ |
-| | PWA: manifest, instalacja, service worker | ⏳ |
-| | API + PostgreSQL, wdrożenie Docker na VPS z HTTPS | ⏳ |
-| **2** | Mapa przy wysyłaniu lokalizacji, zdjęcie zwierzęcia, wymiana kodu zawieszki | ⏳ |
-
-✅ gotowe · 🔄 w trakcie · ⏳ zaplanowane
-
-Poza zakresem, opisane w pracy jako kierunki rozwoju: spacery z formularzem i statystykami, harmonogram, link dla weterynarza, wysyłka wiadomości e-mail, powiadomienia push, śledzenie spaceru przez GPS, mapa zgłoszeń przechowywanych w systemie, lokalizacja skanu z adresu IP.
-
-## Architektura
+https://petracker.pl/t/K7Q2-M9XD
+                       └──┬────┘
+          kod zawieszki: 8 znaków [A-Z0-9], format XXXX-XXXX
+```
 
 ```mermaid
 flowchart LR
-  T[Zawieszka NFC / QR] -->|/t/kod| B[Przeglądarka<br/>React PWA]
-  B -->|HTTPS| C[Caddy]
-  C -->|pliki statyczne| F[Frontend]
-  C -->|/api/*| A[API<br/>Node.js + Express]
-  A --> D[(PostgreSQL)]
+    subgraph P["Warstwa fizyczna"]
+        T["🏷️ Zawieszka<br/>NFC + QR"]
+    end
+    subgraph U["Urządzenie skanujące"]
+        S["📱 Smartfon<br/>(dowolny, bez aplikacji)"]
+    end
+    subgraph L["Warstwa logiczna"]
+        W["🌐 Aplikacja PWA"]
+        A["⚙️ API + routing kontekstowy"]
+        D[("🗄️ PostgreSQL")]
+    end
+    T -- "zbliżenie / skan aparatem" --> S
+    S -- "GET /t/:kod" --> W
+    W -- "GET /api/tags/:kod" --> A
+    A <--> D
+    A -- "wariant widoku + dozwolone dane" --> W
 ```
 
-Całość działa pod jedną domeną, więc nie ma problemów z CORS, a sesja w ciasteczku `httpOnly` działa bez dodatkowej konfiguracji.
+Kod zawieszki nie zawiera żadnych danych o zwierzęciu ani właścicielu — jest jedynie identyfikatorem. Dzięki temu zmiana danych, włączenie trybu zaginięcia czy wymiana zawieszki **nie wymagają ponownego zapisu tagu NFC**.
 
-### Warstwy aplikacji klienckiej
+---
 
+## 3. Routing kontekstowy
+
+Kluczowym elementem systemu jest **routing kontekstowy**: jeden i ten sam adres `/t/:kod` prowadzi do różnych widoków zależnie od tego, *kto* skanuje i *w jakim stanie* jest zwierzę. Decyzję podejmuje **serwer**, a przeglądarka otrzymuje wyłącznie dane przewidziane dla danego wariantu.
+
+```mermaid
+flowchart TD
+    S(["Skan zawieszki<br/>/t/:kod"]) --> A{"Tag istnieje,<br/>jest aktywny<br/>i przypisany?"}
+    A -- nie --> V1["❌ <b>Tag nieaktywny</b><br/>informacja bez danych"]
+    A -- tak --> B{"Skanuje zalogowany<br/>właściciel zwierzęcia?"}
+    B -- tak --> V2["✅ <b>Widok właściciela</b><br/>szybki zapis: karmienie / spacer"]
+    B -- nie --> C{"Zwierzę oznaczone<br/>jako zaginione?"}
+    C -- tak --> V3["🚨 <b>Widok alarmowy</b><br/>komunikat opiekuna, telefon,<br/>SMS z lokalizacją znalazcy"]
+    C -- nie --> V4["ℹ️ <b>Widok znalazcy</b><br/>imię, uwagi medyczne,<br/>przycisk „Zadzwoń”"]
+    V2 & V3 & V4 --> L[("zapis do<br/>tag_scans")]
 ```
-pages  →  components  →  hooks / context  →  api  →  fetch /api
+
+| Wariant | Warunek | Dane zwracane przez API | Akcje |
+|---|---|---|---|
+| Tag nieaktywny | brak tagu, `is_active = false` lub brak przypisanego zwierzęcia | brak | — |
+| Właściciel | ważna sesja i `pets.owner_id = user.id` | profil zwierzęcia | zapis aktywności |
+| Zaginione | `pets.is_lost = true` | imię, uwagi medyczne, komunikat, telefon opiekuna | połączenie, SMS z lokalizacją |
+| Znalazca | pozostałe przypadki | imię, uwagi medyczne | połączenie |
+
+**Kolejność warunków ma znaczenie:** sprawdzenie „właściciel” następuje przed „zaginione”, aby opiekun, który odnalazł swoje zwierzę, nie zobaczył alarmu przeznaczonego dla znalazców.
+
+### Przebieg skanowania
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Z as Znalazca
+    participant B as Przeglądarka (PWA)
+    participant A as API (Express)
+    participant D as PostgreSQL
+    Z->>B: zbliża telefon do zawieszki
+    B->>A: GET /api/tags/K7Q2-M9XD (+ ciasteczko, jeśli jest)
+    A->>D: SELECT tag + zwierzę + właściciel
+    D-->>A: wiersz
+    A->>A: wybór wariantu (routing kontekstowy)
+    A->>D: INSERT INTO tag_scans
+    A-->>B: { variant: "lost", pet, contact }
+    B-->>Z: widok alarmowy
+    Z->>B: „Wyślij moją lokalizację”
+    B->>B: Geolocation API
+    B-->>Z: otwarcie aplikacji SMS (sms:) z linkiem do mapy
+    Note over B,A: lokalizacja nie trafia na serwer
 ```
 
-- **`pages/`**: jedna strona na trasę. Składa komponenty i pobiera dane przez hooki.
-- **`components/`**: `layout/` (ramy stron), `ui/` (wspólne klocki), komponenty domenowe (`pets/`, później `finder/`).
-- **`hooks/`, `context/`**: `useAsync` (ładowanie, błąd, dane), później `useAuth`.
-- **`api/`**: **jedyne miejsce, które wie, skąd przychodzą dane.** Warstwa `api/mock/` z pierwszych sesji znika w sesji 25, gdy panel przejdzie na prawdziwe API.
+### Stan zwierzęcia
 
-Schemat bazy, lista endpointów i przepływy logowania: [`plan/04-architektura.md`](plan/04-architektura.md).
+```mermaid
+stateDiagram-v2
+    [*] --> Bezpieczne
+    Bezpieczne --> Zaginione: właściciel włącza tryb zaginięcia
+    Zaginione --> Bezpieczne: właściciel wyłącza tryb zaginięcia
+```
 
-## Technologie
+---
 
-| Warstwa | Technologia | Stan |
+## 4. Architektura systemu
+
+System działa w architekturze klient–serwer pod **jedną domeną**. Reverse proxy serwuje pliki statyczne aplikacji i przekazuje ścieżki `/api/*` do serwera aplikacyjnego. Eliminuje to problem CORS i pozwala bezpiecznie używać ciasteczka sesyjnego `httpOnly` + `SameSite=Lax`.
+
+```mermaid
+flowchart LR
+    subgraph Client["Klient"]
+        PWA["React SPA / PWA<br/>service worker"]
+    end
+    subgraph VPS["Serwer VPS · Docker Compose"]
+        C["Caddy<br/>reverse proxy<br/>automatyczny HTTPS"]
+        F["Frontend<br/>(pliki statyczne)"]
+        API["API<br/>Node.js + Express"]
+        DB[("PostgreSQL")]
+    end
+    PWA -- "HTTPS :443" --> C
+    C -- "/*" --> F
+    C -- "/api/*" --> API
+    API -- "pg (pula połączeń)" --> DB
+```
+
+### Warstwy serwera
+
+```mermaid
+flowchart TD
+    R["HTTP request"] --> M1["express.json (limit 20 kB)<br/>cookie-parser"]
+    M1 --> M2["middleware tras:<br/>rateLimit · loadUser / requireAuth"]
+    M2 --> RT["routes/*<br/>walidacja (validation.js)"]
+    RT --> SV["services/*<br/>pin.js · session.js"]
+    RT --> DBL["db.js<br/>zapytania SQL z parametrami"]
+    DBL --> PG[("PostgreSQL")]
+    RT --> MP["mappers.js<br/>snake_case → camelCase"]
+    MP --> RES["JSON response"]
+    RT -. "throw HttpError" .-> EH["errorHandler<br/>jednolity format błędu"]
+    EH --> RES
+```
+
+Zastosowane zasady:
+
+- **SQL bez ORM-a** — zapytania parametryzowane (`$1, $2…`), pełna kontrola nad schematem i indeksami.
+- **Jednolita obsługa błędów** — trasy rzucają `HttpError(status, komunikat)`, a `errorHandler` zamienia go na `{ "error": "…" }`. Szczegóły błędów 500 trafiają wyłącznie do logów.
+- **Rozdzielenie `app.js` i `index.js`** — aplikację Express można utworzyć bez nasłuchiwania na porcie (testy).
+- **Konfiguracja przez zmienne środowiskowe** — w trybie produkcyjnym brak wymaganej zmiennej zatrzymuje start serwera.
+
+---
+
+## 5. Model danych
+
+```mermaid
+erDiagram
+    users ||--o{ pets : "posiada"
+    pets  ||--o{ tags : "ma przypisane"
+    tags  ||--o{ tag_scans : "rejestruje"
+    pets  ||--o{ activities : "ma"
+
+    users {
+        uuid id PK
+        text email UK
+        text name
+        text phone
+        text pin_hash "sól:skrót scrypt"
+        timestamptz created_at
+    }
+    pets {
+        uuid id PK
+        uuid owner_id FK
+        text name
+        text species "dog | cat | other"
+        text breed
+        date birth_date
+        numeric weight_kg
+        text medical_notes
+        boolean is_lost
+        text lost_message
+        timestamptz created_at
+    }
+    tags {
+        text code PK "XXXX-XXXX"
+        uuid pet_id FK
+        boolean is_active
+        timestamptz created_at
+    }
+    tag_scans {
+        uuid id PK
+        text tag_code FK
+        timestamptz scanned_at
+        text user_agent
+        boolean by_owner
+    }
+    activities {
+        uuid id PK
+        uuid pet_id FK
+        text type "feeding | walk"
+        timestamptz occurred_at
+    }
+```
+
+Integralność danych jest wymuszana na poziomie bazy:
+
+| Ograniczenie | Cel |
+|---|---|
+| `CHECK (code ~ '^[A-Z0-9]{4}-[A-Z0-9]{4}$')` | poprawny format kodu zawieszki |
+| `UNIQUE INDEX … ON tags (pet_id) WHERE is_active` | co najwyżej **jedna aktywna** zawieszka na zwierzę (indeks częściowy) |
+| `ON DELETE CASCADE` (`pets`, `activities`, `tag_scans`) | usunięcie konta lub zwierzęcia usuwa dane zależne |
+| `ON DELETE SET NULL` (`tags.pet_id`) | fizyczna zawieszka pozostaje w systemie po usunięciu zwierzęcia |
+| `CHECK` na `species`, `type`, `weight_kg > 0`, niepuste `name` | poprawność wartości domenowych |
+| indeksy `(tag_code, scanned_at DESC)`, `(pet_id, occurred_at DESC)` | szybkie pobieranie historii od najnowszych |
+
+Pełny schemat: [`server/sql/001_init.sql`](server/sql/001_init.sql).
+
+---
+
+## 6. API
+
+Wszystkie adresy mają prefiks `/api`, a odpowiedzi są w formacie JSON. Błąd ma zawsze postać `{ "error": "komunikat" }`.
+🔒 — wymaga zalogowania.
+
+| Metoda | Adres | Opis | Stan |
+|---|---|---|---|
+| GET | `/health` | kontrola działania serwera | ✅ |
+| POST | `/auth/register` | rejestracja (e-mail, imię, PIN), ustawia sesję | ✅ |
+| POST | `/auth/login` | logowanie e-mailem i PIN-em, ustawia sesję | ✅ |
+| GET | `/auth/me` | bieżący użytkownik albo `{ "user": null }` | ✅ |
+| POST | `/auth/logout` | usunięcie ciasteczka sesji | ✅ |
+| PATCH | `/me` 🔒 | zmiana imienia i telefonu kontaktowego | ⏳ |
+| GET / POST | `/pets` 🔒 | lista zwierząt właściciela / dodanie zwierzęcia | ⏳ |
+| GET / PATCH | `/pets/:id` 🔒 | szczegóły / edycja | ⏳ |
+| PATCH | `/pets/:id/lost` 🔒 | włączenie / wyłączenie trybu zaginięcia | ⏳ |
+| POST | `/pets/:id/tag` 🔒 | wygenerowanie kodu zawieszki | ⏳ |
+| GET | `/pets/:id/scans` 🔒 | historia skanowań | ⏳ |
+| GET | `/tags/:code` | **publiczny** — routing kontekstowy, zapis skanu | ⏳ |
+| GET / POST | `/pets/:id/activities` 🔒 | lista z 7 dni / szybki zapis aktywności | ⏳ |
+
+Kody odpowiedzi:
+
+| Kod | Znaczenie |
+|---|---|
+| `200` / `201` / `204` | sukces / utworzono zasób / brak treści |
+| `400` | niepoprawne dane wejściowe lub format JSON |
+| `401` | błędny e-mail lub PIN |
+| `409` | konto z tym adresem już istnieje |
+| `413` | zbyt duże żądanie (limit 20 kB) |
+| `429` | przekroczony limit prób (nagłówek `Retry-After`) |
+| `500` | błąd serwera (bez ujawniania szczegółów) |
+
+---
+
+## 7. Uwierzytelnianie i bezpieczeństwo
+
+Właściciel loguje się adresem e-mail i **6-cyfrowym PIN-em**. Sesja to podpisany token **JWT** (ważny 30 dni) przechowywany w ciasteczku — serwer nie musi utrzymywać tabeli sesji.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor W as Właściciel
+    participant B as Przeglądarka
+    participant RL as rateLimit
+    participant A as /api/auth/login
+    participant D as PostgreSQL
+    W->>B: e-mail + PIN
+    B->>RL: POST /api/auth/login
+    RL->>RL: limit na IP (20 / 15 min)<br/>limit na e-mail (5 / 15 min)
+    alt przekroczony limit
+        RL-->>B: 429 + Retry-After
+    else w limicie
+        RL->>A: dalej
+        A->>D: SELECT … WHERE email = $1
+        D-->>A: użytkownik lub brak
+        A->>A: scrypt(PIN, sól) i timingSafeEqual<br/>(skrót-atrapa, gdy konta brak)
+        alt poprawne dane
+            A-->>B: 200 { user } + Set-Cookie: petrace_session (JWT)
+        else błędne dane
+            A-->>B: 401 „Nieprawidłowy e-mail lub PIN.”
+        end
+    end
+```
+
+| Zagrożenie | Zabezpieczenie |
+|---|---|
+| Wyciek bazy danych | PIN zapisany jako `sól:skrót` funkcją **scrypt** (celowo kosztowna obliczeniowo), losowa 16-bajtowa sól na konto |
+| Zgadywanie PIN-u (brute force) | podwójny limit prób: na adres IP oraz na znormalizowany e-mail (odporny na zmianę IP) |
+| Enumeracja kont | ten sam komunikat dla złego e-maila i złego PIN-u; porównanie ze **skrótem-atrapą**, aby czas odpowiedzi był jednakowy |
+| Ataki czasowe | porównanie skrótów funkcją `crypto.timingSafeEqual` |
+| Kradzież sesji przez XSS | ciasteczko `httpOnly` — niedostępne dla JavaScriptu |
+| CSRF | `SameSite=Lax` + jedna domena dla frontendu i API |
+| Przechwycenie ruchu | `Secure` w produkcji, HTTPS przez Caddy |
+| SQL injection | wyłącznie zapytania parametryzowane |
+| Wyścig przy rejestracji | `INSERT … ON CONFLICT (email) DO NOTHING` |
+| Duże / złośliwe żądania | limit treści 20 kB, walidacja typów i długości pól |
+| Ujawnienie danych znalazcy | lokalizacja przekazywana bezpośrednio do SMS-a, bez zapisu w systemie |
+
+---
+
+## 8. Aplikacja kliencka
+
+Aplikacja SPA w React z zagnieżdżonym routingiem (React Router v7) i trzema układami stron dopasowanymi do typu użytkownika.
+
+```mermaid
+flowchart LR
+    P["pages/<br/>jedna strona na trasę"] --> C["components/<br/>layout · ui · pets"]
+    P --> H["hooks/<br/>useAsync"]
+    H --> API["api/<br/>fasada danych"]
+    API --> F["fetch /api/*"]
+    API -. "etap prototypu" .-> M["api/mock/<br/>localStorage"]
+```
+
+Warstwa `api/` jest **jedynym miejscem, które wie, skąd pochodzą dane**. Strony importują funkcje wyłącznie z `api/*.js`, więc przejście z prototypu (dane w `localStorage`) na prawdziwy serwer nie wymaga zmian w komponentach.
+
+### Trasy
+
+| Adres | Widok | Układ | Dostęp | Stan |
+|---|---|---|---|---|
+| `/` | strona główna | Public | publiczny | ✅ |
+| `/login` | logowanie e-mail + PIN | Public | publiczny | 🔄 |
+| `/rejestracja` | zakładanie konta | Public | publiczny | ⏳ |
+| `/t/:tagId` | **strona zawieszki** (routing kontekstowy) | Finder | publiczny | ⏳ |
+| `/t/:tagId/lokalizacja` | wysłanie lokalizacji SMS-em | Finder | publiczny | ⏳ |
+| `/panel` | ostatnio oglądane zwierzę lub pusty stan | Owner | 🔒 | 🔄 |
+| `/zwierzeta/nowe` | dodanie zwierzęcia | Owner | 🔒 | ⏳ |
+| `/zwierzeta/:id` | profil: dane, zdrowie, aktywność, tryb zaginięcia | Owner | 🔒 | 🔄 |
+| `/zwierzeta/:id/edytuj` | edycja | Owner | 🔒 | ⏳ |
+| `/zwierzeta/:id/tag` | zawieszka, kod QR, historia skanowań | Owner | 🔒 | ⏳ |
+| `/ustawienia` | dane kontaktowe, wylogowanie | Owner | 🔒 | ⏳ |
+| `*` | 404 | Public | publiczny | ✅ |
+
+### System projektowy
+
+- **Tokeny** kolorów, fontów i cieni zdefiniowane w `@theme` (Tailwind CSS v4) w `client/src/index.css` — komponenty nie używają wartości „na sztywno”.
+- **Biblioteka komponentów UI:** `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Select`, `Toggle`, `Tabs`, `Modal`, `Sheet`, `Spinner`, `EmptyState`, `ErrorState`.
+- **Trzy stany danych** na każdej stronie: ładowanie, błąd, brak danych.
+- **Fonty lokalne** (Fontsource) — bez zależności od Google Fonts.
+
+---
+
+## 9. Technologie
+
+| Warstwa | Technologia | Uzasadnienie |
 |---|---|---|
-| Interfejs | React 19, Vite 8 | ✅ |
-| Wygląd | Tailwind CSS v4: tokeny kolorów, fontów i cieni w `@theme` w `src/index.css` | ✅ |
-| Nawigacja | React Router v7: zagnieżdżone trasy i layouty | ✅ |
-| Ikony i fonty | lucide-react; Bricolage Grotesque i Plus Jakarta Sans przez Fontsource (lokalnie, bez Google Fonts) | ✅ |
-| Kod QR, mapa | qrcode.react, Leaflet + OpenStreetMap (P2) | ⏳ |
-| PWA | vite-plugin-pwa | ⏳ |
-| Serwer | Node.js, Express, SQL bez ORM-a | ⏳ |
-| Baza danych | PostgreSQL | ⏳ |
-| Wdrożenie | Docker Compose, Caddy (automatyczny HTTPS), VPS | ⏳ |
+| Interfejs | React 19, Vite 8 | komponentowy model UI, szybki serwer deweloperski i build |
+| Routing | React Router 7 | zagnieżdżone trasy i układy |
+| Style | Tailwind CSS 4 | tokeny projektowe, spójność i mały rozmiar CSS |
+| Ikony | lucide-react | lekkie ikony SVG |
+| PWA | vite-plugin-pwa | manifest i service worker |
+| Kod QR / mapa | qrcode.react, Leaflet + OpenStreetMap | generowanie QR do druku; mapa bez kluczy API |
+| Serwer | Node.js 22, Express 5 | natywna obsługa błędów `async`, ten sam język co frontend |
+| Baza danych | PostgreSQL 17, `pg` | relacyjny model, ograniczenia integralności, indeksy częściowe |
+| Bezpieczeństwo | `node:crypto` (scrypt), jsonwebtoken, cookie-parser | brak zależności natywnych, sprawdzone prymitywy |
+| Wdrożenie | Docker Compose, Caddy, nginx | powtarzalne środowisko, automatyczne certyfikaty TLS |
+| Jakość kodu | ESLint, Prettier, EditorConfig | jednolity styl i statyczna analiza |
 
-Uzasadnienia wyborów: [`plan/05-decyzje.md`](plan/05-decyzje.md).
+Uzasadnienia decyzji projektowych: [`plan/05-decyzje.md`](plan/05-decyzje.md).
 
-## Uruchomienie
+---
 
-Wymagany Node.js **20.19+** albo **22.12+**.
+## 10. Uruchomienie
+
+**Wymagania:** Node.js 20.19+ lub 22.12+, Docker (dla bazy danych).
 
 ```bash
-cd petracer-final
+# 1. Baza danych PostgreSQL w kontenerze (schemat ładuje się przy pierwszym starcie)
+docker compose -f docker-compose.dev.yml up -d
+
+# 2. Serwer API  →  http://localhost:3000
+cd server
+cp .env.example .env
 npm install
-npm run dev       # serwer deweloperski: http://localhost:5173
-npm run lint      # analiza kodu (ESLint)
-npm run build     # wersja produkcyjna do dist/
-npm run preview   # podgląd wersji produkcyjnej
+npm run dev
+
+# 3. Aplikacja kliencka  →  http://localhost:5173  (proxy /api → :3000)
+cd client
+npm install
+npm run dev
 ```
 
-Przydatne adresy w trybie deweloperskim:
+| Polecenie | `client/` | `server/` |
+|---|---|---|
+| `npm run dev` | serwer deweloperski Vite | serwer z automatycznym restartem |
+| `npm run build` | wersja produkcyjna do `dist/` | — |
+| `npm start` | — | uruchomienie produkcyjne |
+| `npm run lint` | ESLint | ESLint |
+| `npm run format` | Prettier | Prettier |
 
-- `/panel`: panel właściciela na danych przykładowych,
-- `/dev/ui`: galeria wszystkich komponentów interfejsu.
+### Zmienne środowiskowe serwera
 
-**Dane przykładowe** są zapisane w `localStorage` pod kluczem `pettrace:db:v1`. Żeby wrócić do stanu początkowego, usuń ten klucz w narzędziach przeglądarki (F12 → Application → Local Storage). Po zmianie kształtu danych w `seed.js` podbij numer wersji w kluczu w `src/mocks/db.js`.
+| Zmienna | Opis | Wartość domyślna (dev) |
+|---|---|---|
+| `NODE_ENV` | `development` / `production` | `development` |
+| `PORT` | port API | `3000` |
+| `DATABASE_URL` | adres bazy PostgreSQL | `postgres://petrace:petrace@localhost:5434/petrace` |
+| `JWT_SECRET` | sekret podpisu sesji (w produkcji: `openssl rand -hex 32`) | tylko w trybie dev |
+| `APP_URL` | publiczny adres frontendu | — |
+| `SEED_DEMO_DATA` | wypełnienie pustej bazy danymi przykładowymi | `false` |
+| `COOKIE_SECURE` | ciasteczko tylko przez HTTPS | `true` w produkcji |
 
-## Struktura repozytorium
+Szablon: [`server/.env.example`](server/.env.example).
+
+---
+
+## 11. Struktura repozytorium
 
 ```
 PeTracker-FinalVersion/
-├── plan/                        # dokumentacja: zakres, przypadki użycia, trasy, architektura, decyzje, harmonogram, testy
-└── petracer-final/              # aplikacja kliencka (w sesji 17 zmieni nazwę na client/)
-    ├── public/                  # pliki statyczne (ikony PWA)
-    ├── index.html
-    ├── vite.config.js
-    └── src/
-        ├── main.jsx             # punkt wejścia: fonty, style, RouterProvider
-        ├── router.jsx           # definicja wszystkich tras
-        ├── index.css            # Tailwind, tokeny (@theme), style bazowe
-        ├── pages/               # strony: public/, owner/, dev/
-        ├── components/
-        │   ├── layout/          # layouty, nawigacja boczna i dolna, nagłówek, logo
-        │   ├── ui/              # Button, Card, Badge, Modal, Tabs, Input, Select, Toggle…
-        │   └── pets/            # PetCard, PetAvatar
-        ├── api/                 # fasada danych: pets.js, auth.js
-        │   └── mock/            # „udawany serwer” na localStorage
-        ├── mocks/               # seed.js (dane przykładowe), db.js (zapis w localStorage)
-        ├── hooks/               # useAsync
-        └── lib/                 # czyste funkcje: cn, format, redirect
+├── client/                      # aplikacja webowa (React + Vite)
+│   ├── src/
+│   │   ├── main.jsx             # punkt wejścia
+│   │   ├── router.jsx           # definicja tras
+│   │   ├── index.css            # Tailwind + tokeny projektowe
+│   │   ├── pages/               # public/, owner/
+│   │   ├── components/
+│   │   │   ├── layout/          # układy: Root, Public, Owner, Finder
+│   │   │   ├── ui/              # biblioteka komponentów
+│   │   │   └── pets/            # komponenty domenowe
+│   │   ├── api/                 # fasada danych (+ mock/ na etapie prototypu)
+│   │   ├── hooks/               # useAsync
+│   │   └── lib/                 # funkcje pomocnicze
+│   ├── Dockerfile               # build wieloetapowy: Vite → nginx
+│   └── nginx.conf               # SPA fallback, cache zasobów
+├── server/                      # API (Node.js + Express)
+│   ├── sql/                     # 001_init.sql (schemat), seed.sql
+│   └── src/
+│       ├── index.js / app.js    # start serwera / konfiguracja Expressa
+│       ├── config.js            # zmienne środowiskowe
+│       ├── db.js                # pula połączeń PostgreSQL
+│       ├── validation.js        # walidacja danych wejściowych
+│       ├── mappers.js           # baza → JSON
+│       ├── routes/              # auth.js
+│       ├── middleware/          # rateLimit, requireAuth, errorHandler
+│       └── services/            # pin.js (scrypt), session.js (JWT)
+├── plan/                        # dokumentacja projektowa
+└── docker-compose.dev.yml       # baza danych do pracy lokalnej
 ```
 
-Docelowo dojdą `src/context/` (logowanie), `src/components/finder/` (widoki znalazcy), a obok aplikacji `server/` i `docker-compose.yml`.
+---
 
-## Trasy
+## 12. Stan realizacji
 
-| Adres | Strona | Layout | Logowanie | Stan |
-|---|---|---|---|---|
-| `/` | strona główna | Public | — | ✅ |
-| `/login` | formularz e-mail i PIN | Public | — | 🔄 |
-| `/rejestracja` | nowe konto: e-mail, imię, PIN | Public | — | ⏳ |
-| `/t/:tagId` | strona zawieszki (routing kontekstowy) | Finder | — | ⏳ |
-| `/t/:tagId/lokalizacja` | wysłanie lokalizacji SMS-em | Finder | — | ⏳ |
-| `/panel` | otwiera ostatnio oglądane zwierzę albo pusty stan | Owner | tak | 🔄 |
-| `/zwierzeta/nowe` | nowe zwierzę | Owner | tak | ⏳ |
-| `/zwierzeta/:id` | ekran zwierzęcia: dane, zdrowie, aktywność, tryb zaginięcia | Owner | tak | 🔄 |
-| `/zwierzeta/:id/edytuj` | edycja | Owner | tak | ⏳ |
-| `/zwierzeta/:id/tag` | zawieszka, QR, historia skanowań | Owner | tak | ⏳ |
-| `/ustawienia` | imię, telefon dla znalazców, wylogowanie | Owner | tak | ⏳ |
-| `/dev/ui` | galeria komponentów | Public | — | ✅ |
-| `*` | 404 | Public | — | ✅ |
+✅ gotowe · 🔄 w trakcie · ⏳ zaplanowane
 
-Ochrona tras panelu (`RequireAuth`) powstaje w sesji 23. Opis widoków: [`plan/03-widoki-i-trasy.md`](plan/03-widoki-i-trasy.md).
+| Moduł | Stan |
+|---|---|
+| Konfiguracja projektu, tokeny projektowe, biblioteka komponentów UI | ✅ |
+| Mapa tras i układy stron | ✅ |
+| Panel właściciela: lista i profil zwierzęcia (prototyp na danych lokalnych) | 🔄 |
+| Schemat bazy danych | ✅ |
+| API: rejestracja, logowanie, sesja, wylogowanie, limity prób | ✅ |
+| Połączenie panelu z API, ochrona tras | ⏳ |
+| Strona zawieszki — cztery warianty routingu kontekstowego | ⏳ |
+| Tryb zaginięcia, SMS z lokalizacją znalazcy | ⏳ |
+| Generowanie zawieszki (kod, QR do druku, zapis NFC) | ⏳ |
+| Szybki zapis aktywności, historia skanowań | ⏳ |
+| PWA, wdrożenie na VPS z HTTPS | ⏳ |
 
-## Zasady pracy z kodem
+```mermaid
+gantt
+    title Harmonogram realizacji
+    dateFormat YYYY-MM-DD
+    axisFormat %d.%m
+    section Implementacja
+    M1 Logowanie na serwerze          :active, m1, 2026-11-08, 2026-11-22
+    M2 Panel właściciela              :m2, after m1, 2026-12-06
+    M3 Aplikacja online jako PWA      :m3, after m2, 2026-12-13
+    M4 Rdzeń: strona zawieszki        :m4, after m3, 2027-01-03
+    section Weryfikacja
+    M5 Testy na urządzeniach (NFC/QR) :m5, after m4, 2027-01-17
+    section Praca pisemna
+    M6 Praca gotowa do złożenia       :m6, after m5, 2027-01-24
+```
 
-- Strony i komponenty **nie importują** niczego z `mocks/` ani `api/mock/`, tylko z `api/*.js`.
-- Kolory, fonty i cienie wyłącznie z tokenów (`bg-pine`, `text-ink-muted`, `shadow-card`…), bez wartości na sztywno.
-- Każda strona z danymi obsługuje trzy stany: ładowanie, błąd i brak danych.
-- Interfejs mobile-first, duże przyciski, obsługa klawiatury i atrybuty `aria-*`.
+**Poza zakresem pracy** (kierunki rozwoju): spacery ze statystykami, harmonogram opieki, dostęp dla weterynarza, powiadomienia push, śledzenie spaceru GPS, mapa zgłoszeń.
 
-**Definicja ukończenia funkcji** ([`plan/06-harmonogram.md`](plan/06-harmonogram.md)):
+---
 
-1. działa w przeglądarce bez błędów w konsoli,
-2. `npm run lint` i `npm run build` przechodzą,
-3. działa na telefonie i na komputerze,
-4. obsługuje ładowanie, błąd i brak danych,
-5. README albo dokumentacja jest zaktualizowana, jeśli zmienia się struktura lub trasy,
-6. trafia do repozytorium osobnym commitem z opisem zmiany.
+## 13. Dokumentacja
 
-## Stan prac
-
-| Kamień milowy | Termin | Stan |
-|---|---|---|
-| M1 Logowanie na serwerze | 22.11.2026 | 🔄 |
-| M2 Panel właściciela | 6.12.2026 | ⏳ |
-| M3 Aplikacja online jako PWA | 13.12.2026 | ⏳ |
-| M4 Rdzeń systemu (strona zawieszki) | 3.01.2027 | ⏳ |
-| M5 System przetestowany | 17.01.2027 | ⏳ |
-| M6 Praca gotowa do złożenia | 24.01.2027 | ⏳ |
-
-**Zrobione:** konfiguracja projektu i tokenów, mapa tras, layouty, komponenty UI, `useAsync`, ekran zwierzęcia z przełącznikiem i arkuszem „Akcje”, formularz logowania na danych przykładowych.
-**Teraz:** porządki, serwer Express, PostgreSQL i logowanie PIN-em (sesje 17–24).
-
-Lista zadań: [`plan/06-harmonogram.md`](plan/06-harmonogram.md).
-
-## Dokumentacja
-
-| Plik | Zawartość |
+| Dokument | Zawartość |
 |---|---|
 | [`00-start.md`](plan/00-start.md) | przegląd projektu |
 | [`01-zakres.md`](plan/01-zakres.md) | zakres funkcjonalny i priorytety |
-| [`02-przypadki-uzycia.md`](plan/02-przypadki-uzycia.md) | aktorzy i scenariusze |
-| [`03-widoki-i-trasy.md`](plan/03-widoki-i-trasy.md) | podstrony i adresy |
+| [`02-przypadki-uzycia.md`](plan/02-przypadki-uzycia.md) | aktorzy i scenariusze użycia |
+| [`03-widoki-i-trasy.md`](plan/03-widoki-i-trasy.md) | widoki i adresy |
 | [`04-architektura.md`](plan/04-architektura.md) | architektura, baza danych, API, wdrożenie |
 | [`05-decyzje.md`](plan/05-decyzje.md) | dziennik decyzji projektowych |
-| [`06-harmonogram.md`](plan/06-harmonogram.md) | harmonogram, kamienie milowe, ryzyka |
+| [`06-harmonogram.md`](plan/06-harmonogram.md) | kamienie milowe i ryzyka |
 | [`07-praca-pisemna.md`](plan/07-praca-pisemna.md) | konspekt pracy dyplomowej |
 | [`08-ankieta.md`](plan/08-ankieta.md) | badanie ankietowe |
 | [`09-testy.md`](plan/09-testy.md) | scenariusze testów na urządzeniach |
-| [Plan przepisywania](<plan/PeTrace — plan przepisywania.html>) | sesje krok po kroku, postęp, pytania na obronę |
 
-## Autor
+---
 
-Maciej Strączek — praca inżynierska, kierunek informatyka.
+<div align="center">
+
+**Maciej Strączek** · praca inżynierska · Informatyka · WSTiE Sucha Beskidzka
+
+</div>

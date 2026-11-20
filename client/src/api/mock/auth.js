@@ -7,7 +7,7 @@ import { delay } from './client.js'
   Logowanie bez hasła („magic link”) — odpowiednik przyszłego server/src/routes/auth.js:
     1. requestMagicLink — „serwer” zapisuje jednorazowy token i „wysyła” e-mail z linkiem
        /auth/verify?token=…  (e-maila nie ma, link wraca jako `devLink`)
-    2. verifyToken — sprawdza token i zakłada sesję (sesja 17)
+    2. verifyToken — sprawdza token i zakłada sesję
 */
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

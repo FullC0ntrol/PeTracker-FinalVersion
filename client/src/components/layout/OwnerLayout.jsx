@@ -3,9 +3,9 @@ import Logo from './Logo.jsx'
 
 /*
   Układ panelu właściciela pod telefon: bez sidebara, dolnego paska i menu.
-  U góry przyklejony nagłówek (logo, a od sesji 17 także kółko konta), pod nim jedna wąska
+  U góry przyklejony nagłówek (logo, docelowo także menu konta), pod nim jedna wąska
   kolumna — na komputerze ta sama, tylko wyśrodkowana. Cała nawigacja jest na ekranie
-  zwierzęcia: przełącznik awatarów u góry i arkusz „Akcje” na dole (sesja 15b).
+  zwierzęcia: przełącznik awatarów u góry i arkusz „Akcje” na dole.
 */
 export default function OwnerLayout() {
   return (

@@ -16,7 +16,7 @@ Zeskanowanie zawieszki dowolnym smartfonem otwiera stronę w przeglądarce, bez 
 ## Uruchomienie (aplikacja kliencka)
 
 ```bash
-cd client         # do sesji 17 folder nazywa się petracer-final
+cd client
 npm install
 npm run dev       # serwer deweloperski
 npm run build     # wersja produkcyjna

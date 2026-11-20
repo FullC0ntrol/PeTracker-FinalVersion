@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Dokąd wrócić po zalogowaniu — w sesji 18 wypełni to RequireAuth.
+  // Dokąd wrócić po zalogowaniu — docelowo adres przekazany przez RequireAuth.
   const next = null
 
   async function handleSubmit(event) {
