@@ -7,6 +7,7 @@ import ErrorState from '../../components/ui/ErrorState.jsx'
 import Spinner from '../../components/ui/Spinner.jsx'
 import { useAsync } from '../../hooks/useAsync.js'
 import { getLastPetId } from '../../lib/lastPet.js'
+import { useAuth } from '../../hooks/useAuth.js'
 
 /*
   /panel nie ma już własnej listy kart. Jeśli są zwierzęta, od razu otwieramy ekran
@@ -14,6 +15,7 @@ import { getLastPetId } from '../../lib/lastPet.js'
   Własny widok /panel zostaje tylko dla konta bez zwierząt: powitanie i przycisk „Dodaj”.
 */
 export default function DashboardPage() {
+  const { user } = useAuth()
   const { data: pets, error, isLoading, reload } = useAsync(getPets, [])
 
   if (isLoading) return <Spinner showLabel label="Wczytuję zwierzęta…" />
@@ -29,7 +31,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 pt-4">
-      <h1 className="text-2xl font-bold tracking-tight">Twoje zwierzęta</h1>
+      <h1 className="text-2xl font-bold tracking-tight">Cześć, {user.name}</h1>
       <EmptyState
         icon={PawPrint}
         title="Nie masz jeszcze zwierząt"

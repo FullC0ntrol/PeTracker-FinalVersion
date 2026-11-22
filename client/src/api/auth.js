@@ -1,13 +1,30 @@
-// Fasada logowania — patrz komentarz w api/pets.js.
+import { request } from './request.js'
+
 /*
-  Logowanie bez hasła ( magic link ) i dane konta.
-    requestMagicLink(email, { name, next }) => { email, devLink? }  POST /api/auth/request-link
-    verifyToken(token)  => { user }   POST /api/auth/verify
-    getCurrentUser() => user | null GET /api/auth/me
-    logout()      POST /api/auth/logout
-    updateSettings({ name, phone })  => user  PATCH /api/me
-    getDemoLogin()   => { enabled, email }   GET /api/auth/demo
-    loginAsDemo()  =>  { user }   POST /api/auth/demo
+  Konto i logowanie. Strony importują funkcje z plików w api/ i nie znają adresów serwera.
+    register({ email, name, pin }) → { user }             POST  /api/auth/register
+    login(email, pin)              → { user }             POST  /api/auth/login
+    getCurrentUser()               → user | null          GET   /api/auth/me
+    logout()                                              POST  /api/auth/logout
+    updateSettings({ name, phone }) → user                PATCH /api/me
+    getDemoLogin()                 → { enabled, email }   GET   /api/auth/demo
+    loginAsDemo()                  → { user }             POST  /api/auth/demo
 */
 
-export { requestMagicLink } from './mock/auth.js'
+export function register(account) {
+  return request('POST', '/auth/register', account)
+}
+
+export function login(email, pin) {
+  return request('POST', '/auth/login', { email, pin })
+}
+
+export async function getCurrentUser() {
+  const { user } = await request('GET', '/auth/me')
+  return user 
+}
+
+export function logout() {
+  return request('POST', '/auth/logout')
+}
+

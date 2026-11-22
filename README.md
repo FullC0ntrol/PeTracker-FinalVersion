@@ -477,23 +477,105 @@ Warstwa `api/` jest **jedynym miejscem, które wie, skąd pochodzą dane**. Stro
 
 ## 11. Uruchomienie
 
-**Wymagania:** Node.js 20.19+ lub 22.12+, Docker (dla bazy danych).
+Lokalnie system to trzy elementy, każdy na swoim porcie:
+
+```mermaid
+flowchart LR
+    B["Przeglądarka<br/>localhost:5173"] --> V["Vite — aplikacja kliencka<br/>:5173"]
+    V -- "/api/* (proxy)" --> A["API Express<br/>:3000"]
+    A --> D[("PostgreSQL w Dockerze<br/>:5434")]
+```
+
+### Krok 0. Zainstaluj narzędzia (jednorazowo)
+
+| Narzędzie | Windows | Linux (Ubuntu / Debian) |
+|---|---|---|
+| **Git** | [git-scm.com](https://git-scm.com/download/win), instalator z ustawieniami domyślnymi | `sudo apt install git` |
+| **Node.js 22 LTS** | [nodejs.org](https://nodejs.org), instalator LTS | przez [nvm](https://github.com/nvm-sh/nvm): po instalacji nvm `nvm install 22` |
+| **Docker** | [Docker Desktop](https://www.docker.com/products/docker-desktop/) (wymaga WSL 2, instalator sam to zaproponuje); po instalacji uruchom Docker Desktop | `curl -fsSL https://get.docker.com \| sh`, potem `sudo usermod -aG docker $USER` i wyloguj się / zaloguj ponownie |
+
+Sprawdzenie (w terminalu: PowerShell na Windows, zwykły terminal na Linuksie):
 
 ```bash
-# 1. Baza danych PostgreSQL w kontenerze (schemat ładuje się przy pierwszym starcie)
-docker compose -f docker-compose.dev.yml up -d
+git --version
+node -v                 # v22.x
+docker compose version
+```
 
-# 2. Serwer API  →  http://localhost:3000
+### Krok 1. Pobierz repozytorium
+
+```bash
+git clone https://github.com/FullC0ntrol/PeTracker-FinalVersion.git
+cd PeTracker-FinalVersion
+```
+
+### Krok 2. Uruchom bazę danych
+
+```bash
+docker compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml ps      # STATUS powinien pokazać "healthy"
+```
+
+Przy pierwszym starcie PostgreSQL sam tworzy tabele z `server/sql/001_init.sql`. Dane zostają na wolumenie Dockera między uruchomieniami.
+
+### Krok 3. Uruchom serwer API (terminal nr 1)
+
+**Windows (PowerShell):**
+
+```powershell
+cd server
+Copy-Item .env.example .env
+npm install
+npm run dev
+```
+
+**Linux:**
+
+```bash
 cd server
 cp .env.example .env
 npm install
 npm run dev
+```
 
-# 3. Aplikacja kliencka  →  http://localhost:5173  (proxy /api → :3000)
+W terminalu pojawi się `API działa na http://localhost:3000`. Sprawdzenie: otwórz w przeglądarce [localhost:3000/api/health](http://localhost:3000/api/health) — odpowiedź to `{"ok":true}`.
+
+Ten terminal zostaw otwarty: serwer działa, dopóki go nie zamkniesz.
+
+### Krok 4. Uruchom aplikację kliencką (terminal nr 2)
+
+Otwórz **nowy** terminal w folderze repozytorium (polecenia są takie same na Windows i Linuksie):
+
+```bash
 cd client
 npm install
 npm run dev
 ```
+
+Otwórz [localhost:5173](http://localhost:5173). Zapytania do `/api` Vite przekazuje do serwera na porcie 3000, więc nic więcej nie trzeba konfigurować.
+
+**Konto demo** (wczytywane do pustej bazy, bo w `.env.example` jest `SEED_DEMO_DATA=true`): e-mail `maciej@pettrace.pl`, PIN `123456`.
+
+### Zatrzymanie i reset
+
+| Co | Polecenie |
+|---|---|
+| zatrzymanie API i aplikacji | `Ctrl + C` w obu terminalach |
+| zatrzymanie bazy (dane zostają) | `docker compose -f docker-compose.dev.yml down` |
+| usunięcie bazy razem z danymi (świeży start) | `docker compose -f docker-compose.dev.yml down -v` |
+
+### Najczęstsze problemy
+
+| Objaw | Przyczyna i rozwiązanie |
+|---|---|
+| `docker: error during connect` / `Cannot connect to the Docker daemon` | Docker nie działa: uruchom Docker Desktop (Windows) albo `sudo systemctl start docker` (Linux) |
+| `permission denied … docker.sock` (Linux) | użytkownik nie jest w grupie `docker`: `sudo usermod -aG docker $USER` i ponowne zalogowanie |
+| `npm : … running scripts is disabled on this system` (Windows) | PowerShell blokuje skrypty: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+| serwer kończy się błędem `ECONNREFUSED` przy starcie | baza jeszcze nie działa: wróć do kroku 2 i poczekaj na status `healthy` |
+| `port is already allocated` przy starcie bazy | port 5434 jest zajęty: zmień go w `docker-compose.dev.yml` i w `DATABASE_URL` w `server/.env` |
+| zmiany w `001_init.sql` nie są widoczne | schemat ładuje się tylko do pustej bazy: `down -v`, potem znowu `up -d` |
+
+### Polecenia npm
 
 | Polecenie | `client/` | `server/` |
 |---|---|---|
@@ -512,7 +594,7 @@ npm run dev
 | `DATABASE_URL` | adres bazy PostgreSQL | `postgres://petrace:petrace@localhost:5434/petrace` |
 | `JWT_SECRET` | sekret podpisu sesji (w produkcji: `openssl rand -hex 32`) | tylko w trybie dev |
 | `APP_URL` | publiczny adres frontendu | — |
-| `SEED_DEMO_DATA` | wypełnienie pustej bazy danymi przykładowymi | `false` |
+| `SEED_DEMO_DATA` | wypełnienie pustej bazy danymi przykładowymi | `true` w `.env.example`, bez zmiennej `false` |
 | `COOKIE_SECURE` | ciasteczko tylko przez HTTPS | `true` w produkcji |
 
 Szablon: [`server/.env.example`](server/.env.example).

@@ -1,75 +1,70 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
-import { requestMagicLink } from '../../api/auth.js'
+import { Link, useLocation, useNavigate } from 'react-router'
 import PageHeader from '../../components/layout/PageHeader.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Input from '../../components/ui/Input.jsx'
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { useAuth } from '../../hooks/useAuth.js'
 
 export default function LoginPage() {
+  const { login } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
-  // Inputy kontrolowane: wartość pola żyje w stanie, a pole tylko ją pokazuje i zgłasza zmiany.
   const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [error, setError] = useState(null)
+  const [pin, setPin] = useState('')
+  const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Dokąd wrócić po zalogowaniu — docelowo adres przekazany przez RequireAuth.
-  const next = null
-
   async function handleSubmit(event) {
-    // Bez tego przeglądarka wysłałaby formularz „po staremu” i przeładowała całą stronę.
     event.preventDefault()
-
-    // Sprawdzamy od razu w przeglądarce (szybka odpowiedź), a „serwer” i tak sprawdzi jeszcze raz.
-    if (!EMAIL_PATTERN.test(email.trim())) {
-      setError('Wpisz poprawny adres e-mail, np. maciej@pettrace.pl.')
-      return
-    }
-
     setError(null)
     setIsSubmitting(true)
     try {
-      const result = await requestMagicLink(email, { name, next })
-      navigate('/login/sprawdz-poczte', { state: { email: result.email, devLink: result.devLink } })
-    } catch (requestError) {
-      setError(requestError.message)
+      await login(email, pin)
+      navigate(location.state?.from ?? '/panel', { replace: true })
+    } catch (loginError) {
+      setError(loginError.message)
       setIsSubmitting(false)
     }
   }
-
   return (
     <div className="mx-auto max-w-sm">
-      <PageHeader
-        title="Zaloguj się"
-        description="Wyślemy Ci na e-mail link do logowania — bez hasła."
-      />
-      {/* noValidate: wyłączamy dymki walidacji przeglądarki, żeby błąd wyglądał tak jak reszta aplikacji. */}
+      <PageHeader title="Logowanie" description="Wpisz adres e-mail i swój 6-cyfrowy PIN." />
       <Card as="form" onSubmit={handleSubmit} noValidate className="space-y-4">
         <Input
           label="Adres e-mail"
           type="email"
           name="email"
           autoComplete="email"
-          placeholder="maciej@pettrace.pl"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          error={error}
-          hint="Konto demo: maciej@pettrace.pl. Inny adres założy nowe konto."
+          onChange={(e) => setEmail(e.target.value)}
         />
         <Input
-          label="Imię (opcjonalnie)"
-          name="name"
-          autoComplete="given-name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          hint="Tylko przy pierwszym logowaniu — możesz je później zmienić w ustawieniach."
+          label="PIN"
+          type="password"
+          name="pin"
+          inputMode="numeric"
+          autoComplete="current-password"
+          maxLength={6}
+          value={pin}
+          onChange={(event) => setPin(event.target.value)}
+          error={error}
+          hint="Nie pamiętasz PIN-u? Skontaktuj się z administratorem."
         />
         <Button type="submit" size="lg" fullWidth disabled={isSubmitting}>
-          {isSubmitting ? 'Wysyłam…' : 'Wyślij link do logowania'}
+          {isSubmitting ? 'Loguję…' : 'Zaloguj się'}
         </Button>
+        <p className="text-center text-sm text-ink-muted">
+          Nie masz konta?{' '}
+          <Link
+            to="/rejestracja"
+            state={location.state}
+            className="font-semibold text-pine underline-offset-4 hover:underline"
+          >
+            Załóż je
+          </Link>
+        </p>
       </Card>
     </div>
   )

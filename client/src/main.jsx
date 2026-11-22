@@ -5,9 +5,13 @@ import '@fontsource-variable/plus-jakarta-sans'
 import './index.css'
 import { router } from './router'
 import { RouterProvider } from 'react-router'
+import AuthProvider from './context/AuthProvider.jsx'
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>,
 )
