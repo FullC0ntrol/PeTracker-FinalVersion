@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, Navigate } from 'react-router'
 import PageHeader from '../../components/layout/PageHeader.jsx'
 import Button from '../../components/ui/Button.jsx'
 import Card from '../../components/ui/Card.jsx'
@@ -8,13 +8,16 @@ import Input from '../../components/ui/Input.jsx'
 import { useAuth } from '../../hooks/useAuth.js'
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { user, login } = useAuth()
   const location = useLocation()
-  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // RequireAuth zapisał tu stronę, na którą użytkownik próbował wejść przed zalogowaniem.
+  const from = location.state?.from
+  if (user) return <Navigate to={from ? from.pathname + from.search : '/panel'} replace />
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -22,7 +25,6 @@ export default function LoginPage() {
     setIsSubmitting(true)
     try {
       await login(email, pin)
-      navigate(location.state?.from ?? '/panel', { replace: true })
     } catch (loginError) {
       setError(loginError.message)
       setIsSubmitting(false)

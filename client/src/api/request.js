@@ -31,7 +31,7 @@ export async function request(method, path, body) {
 
   const data = await response.json().catch(() => null)
   if (!response.ok) {
-    throw apiError(response.status, data?.message ?? 'Nieznany błąd serwera.')
+    throw apiError(response.status, data?.error ??'Nieznany błąd serwera.')
   }
   return data
 }
